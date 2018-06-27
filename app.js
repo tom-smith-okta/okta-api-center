@@ -11,8 +11,6 @@ var fs = require("fs")
 
 var session = require("express-session")
 
-var promptly = require("promptly")
-
 ///////////////////////////////////////////////////
 
 /************************************************/
