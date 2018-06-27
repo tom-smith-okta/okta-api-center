@@ -1,0 +1,111 @@
+{
+	"DATA_SOURCE": {
+		"objType": "data",
+		"saveToOutput": true,
+		"default": "mulesoft_idp"
+	},
+	"TAG": {
+		"hint": "this is a unique string to help identify objects created by this bootstrap session",
+		"saveToOutput": true,
+		"default": "{{GENERATE_TAG}}",
+		"objType": "string"
+	},
+	"ACCESS_POLICY": {
+		"saveToOutput": true,
+		"objType": "json",
+		"objectClass": "okta:oauth_policy",
+		"default": {
+			"type": "OAUTH_AUTHORIZATION_POLICY",
+			"status": "ACTIVE",
+			"name": "Solar system API access policy",
+			"description": "Solar system API access policy",
+			"priority": 1,
+			"conditions": {
+				"clients": {
+					"include": [
+						"{{AUTHN_CLIENT_ID}}"
+					]
+				}
+			}
+		},
+		"oktaEndpoint": "/api/v1/authorizationServers/{{OKTA_AZ_SERVER_ID}}/policies"
+	},
+	"SILVER_RULE": {
+		"saveToOutput": true,
+		"objType": "json",
+		"objectClass": "okta:rule",
+		"default": {
+			"type": "RESOURCE_ACCESS",
+			"status": "ACTIVE",
+			"name": "silver access rule",
+			"priority": 1,
+			"conditions": {
+				"people": {
+					"groups": {
+						"include": [
+							"{{SILVER_GROUP_ID}}"
+						]
+					}
+				},
+				"grantTypes": {
+					"include": [
+						"implicit",
+						"authorization_code"
+					]
+				},
+				"scopes": {
+					"include": [
+						"{{SILVER_SCOPE_NAME}}", "openid"
+					]
+				}
+			},
+			"actions": {
+				"token": {
+					"accessTokenLifetimeMinutes": 60,
+					"refreshTokenLifetimeMinutes": 0,
+					"refreshTokenWindowMinutes": 10080
+				}
+			}
+		},
+		"oktaEndpoint": "/api/v1/authorizationServers/{{OKTA_AZ_SERVER_ID}}/policies/{{ACCESS_POLICY.id}}/rules"
+	},
+	"GOLD_RULE": {
+		"saveToOutput": true,
+		"objType": "json",
+		"objectClass": "okta:rule",
+		"default": {
+			"type": "RESOURCE_ACCESS",
+			"status": "ACTIVE",
+			"name": "gold access rule",
+			"priority": 1,
+			"conditions": {
+				"people": {
+					"groups": {
+						"include": [
+							"{{GOLD_GROUP_ID}}"
+						]
+					}
+				},
+				"grantTypes": {
+					"include": [
+						"implicit",
+						"authorization_code"
+					]
+				},
+				"scopes": {
+					"include": [
+						"{{GOLD_SCOPE_NAME}}", "openid"
+					]
+				}
+			},
+			"actions": {
+				"token": {
+					"accessTokenLifetimeMinutes": 60,
+					"refreshTokenLifetimeMinutes": 0,
+					"refreshTokenWindowMinutes": 10080
+				}
+			}
+		},
+		"oktaEndpoint": "/api/v1/authorizationServers/{{OKTA_AZ_SERVER_ID}}/policies/{{ACCESS_POLICY.id}}/rules"
+	}
+}

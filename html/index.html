@@ -1,0 +1,343 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+
+	<meta charset='utf-8' />
+	<meta name='viewport' content='width=device-width, initial-scale=1' />
+
+	<!-- ******* TITLE OF PAGE ******** -->
+
+	<title>Okta API Center</title>
+
+	<link rel="shortcut icon" href="https://www.okta.com/sites/all/themes/developer/favicon.ico" type="image/vnd.microsoft.icon" />
+
+	<!-- ******* CSS *******************-->
+
+	<!-- BOOTSTRAP CSS -->
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+	<!-- ******* JAVASCRIPT *******************-->
+
+	<script
+	  src="https://code.jquery.com/jquery-3.2.1.min.js"
+	  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+	  crossorigin="anonymous"></script>
+
+	<script src = 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js'></script>
+
+	<script src = 'https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.9.0/js/okta-sign-in.min.js'></script>
+
+	<script src="https://ok1static.oktacdn.com/assets/js/sdk/okta-auth-js/1.8.0/okta-auth-js.min.js" type="text/javascript"></script>
+
+	<script>
+
+		var signIn = new OktaSignIn(
+			{
+				baseUrl: '{{OKTA_TENANT}}'
+			}
+		)
+
+		signIn.session.get(function (res) {
+			// Okta session exists
+			if (res.status === 'ACTIVE') {
+				console.log("there is an Okta session.")
+				console.dir(res)
+				var arr = res.login.split("@") // get short login name
+
+				$("#username").html(arr[0])
+			}
+
+			// No session, or error retrieving the session. Render the Sign-In Widget.
+			else if (res.status === 'INACTIVE') {
+				console.log("there is no Okta session.")
+				$("#username").html("[none]")
+			}
+		})
+
+		function log_out() {
+			signIn.session.close(function (err) {
+				if (err) {
+					// errors usually happen bc Okta session does not exist
+					location.reload(true)
+				}
+				console.log("successfully signed user out.")
+				location.reload(true)
+			})
+		}
+
+		window.onload = function() {
+			var gateway
+
+			if (localStorage.getItem("gateway")) {
+
+				gateway = localStorage.getItem("gateway")
+
+				$("#gateway").html(gateway)
+			}
+			else {
+				$("#gateway").html("[none]")
+			}
+
+			// look for login url in local storage
+			// just for reference
+			if (localStorage.getItem("authURI")) {
+				console.log("authn uri: " + localStorage.getItem("authURI"));
+			}
+
+			// look for parameters in url
+			if (window.location.hash) {
+				var urlParams = getParams(window.location.hash.substring(1));
+
+				console.log("the url params are: ");
+
+				// show the url parameters nicely in the console
+				for (const prop in urlParams) {
+					console.log(prop + ": " + urlParams[prop]);
+				}
+
+				// if we have an authorization code, send it to the server
+				// immediately to get an access token and id token from Okta.
+				// The tokens will be sent to the server, but the server side app
+				// will also send them down to the browser for demo purposes
+				if (urlParams.code) {
+					getAccessToken(urlParams.code)
+				}
+			}
+		}
+
+		function set_gateway(gateway) {
+			localStorage.setItem("gateway", gateway)
+			$("#gateway").html(gateway)
+		}
+
+	</script>
+
+	<script>
+
+	function getParams(hash) {
+
+		var arr = hash.split("&");
+
+		var params = {};
+
+		// convert the url params to an object
+		for (var i = 0; i < arr.length; i++) {
+			var kvp = arr[i].split("=");
+			params[kvp[0]] = kvp[1];
+		}
+
+		return params;
+	}
+
+	function getAccessToken(code) {
+
+		$.ajax({
+			type: 'POST',
+			data: JSON.stringify({ "code": code}),
+			contentType: 'application/json',
+			url: '/getAccessToken',
+			success: function(data) {
+				var obj = JSON.parse(data)
+
+				console.log("access token:")
+				console.log(obj.access_token)
+
+				console.log("id token:")
+				console.log(obj.id_token)
+
+				$("#access_token_decoded").html("<pre>" + JSON.stringify(obj.access_token_decoded, null, 1) + "</pre>")
+
+				$("#id_token_decoded").html("<pre>" + JSON.stringify(obj.id_token_decoded, null, 1) + "</pre>")
+			}
+		});
+	}
+
+	// make a request to the API gateway
+	// request will go to the server-side app first so the app can include the access token
+	function getData(endpoint) {
+
+		$.ajax({
+			type: 'POST',
+			data: JSON.stringify({ "endpoint": endpoint, "gateway": localStorage.getItem("gateway") }),
+			contentType: 'application/json',
+			url: '/getData',
+			success: function(data) {
+				var obj = JSON.parse(data);
+
+				console.log("the results are: " + data);
+
+				$("#results_" + endpoint).html("<pre>" + JSON.stringify(obj, null, 1) + "</pre>");
+			}
+		})
+	}
+
+	function getNonce() {
+		var text = "";
+		var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+		for (var i = 0; i < 12; i++)
+			text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+		return text;
+	}
+
+	function redirectToOkta(level) {
+		var uri = '{{OKTA_AZ_SERVER_ISSUER}}/v1/authorize?response_type=code&client_id={{AUTHN_CLIENT_ID}}&redirect_uri={{REDIRECT_URI}}&response_mode=fragment'
+
+		uri += '&state=' + localStorage.getItem("gateway")
+		uri += '&nonce=' + getNonce();
+		uri += '&prompt=login&scope=openid';
+
+		if (level == "silver" || level == "gold") { uri += " http://myapp.com/scp/silver"; };
+
+		if (level == "gold") { uri += " http://myapp.com/scp/gold"; }
+
+		localStorage.setItem("authURI", uri);
+
+		console.log("authn URI: " + uri);
+
+		window.location = uri;
+	}
+
+	</script>
+</head>
+
+<body>
+<!-- Wrapper -->
+<div class="container">
+
+      <!-- Static navbar -->
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Okta API Center</a>
+          </div>
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+            	<li><a href="#" onclick="log_out()">Log out / Reload</a></li>
+
+				<li class="dropdown">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Gateways <span class="caret"></span></a>
+					<ul class="dropdown-menu">
+						<li><a href="#" onclick="set_gateway('mulesoft')">Mulesoft</a></li>
+					</ul>
+				</li>
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+
+			</ul>
+
+          </div><!--/.nav-collapse -->
+        </div><!--/.container-fluid -->
+      </nav>
+	<div class="well" style="background-color: rgb(234, 239, 247)">
+		<div class="row" style="vertical-align: top">
+			<div class="col-md-6" style="vertical-align: top">
+
+				<p><i>The currently logged-in Okta user is: <span id = "username" style = "font-weight: bold"></span></i></p>
+				<p><i>The current gateway or proxy is: <span id = "gateway" style = "font-weight: bold"></span></i></p>
+
+				<div class = "panel panel-default">
+					<div class = "panel-heading">
+						SILVER Access: A list of the planets
+					</div>
+					<div class = "panel-body">
+						<div class = "row">
+							<div class = "col-sm-6">
+								<p>silver user: {{SILVER_USERNAME}}
+								<br>
+								password: {{FAKE_USER_PASSWORD}}</p>
+							</div>
+							<div class = "col-sm-6" style="text-align: center;">
+								<button type="button" class="btn btn-default" onclick="redirectToOkta('silver')">authenticate</button>
+							</div>
+						</div>
+
+						<span id = "planetsLink">proxy endpoint: <span class = "proxy_uri">{{PROXY_URI}}/planets</span>
+
+						<div style= "text-align: center; padding-top: 10px">
+							<button type="button" class="btn btn-info" onclick="getData('planets')">show me the planets!</button>
+						</div>
+
+						<div class="panel panel-primary" style ="margin-top:10px">
+							<div class="panel-heading">
+								<h3 class="panel-title">Planets</h3>
+							</div>
+							<div class="panel-body" id = "results_planets"></div>
+						</div>
+					</div>
+				</div>
+
+				<div class = "panel panel-warning">
+					<div class = "panel-heading">
+						GOLD Access: A list of (selected) moons
+					</div>
+					<div class = "panel-body">
+						<div class = "row">
+							<div class = "col-sm-6">
+								<p>username: {{GOLD_USERNAME}}
+								<br>
+								password: {{FAKE_USER_PASSWORD}}</p>
+							</div>
+							<div class = "col-sm-6" style="text-align: center;">
+								<button type="button" class="btn btn-warning" onclick="redirectToOkta('gold')">authenticate</button>
+							</div>
+						</div>
+						<span id = "moonsLink">proxy endpoint: <span class = "proxy_uri">{{PROXY_URI}}/moons</span>
+
+						<div style= "text-align: center; padding-top: 10px">
+							<button type="button" class="btn btn-info" onclick="getData('moons')">show me some moons!</button>
+						</div>
+
+						<div class="panel panel-primary" style ="margin-top:10px">
+							<div class="panel-heading">
+								<h3 class="panel-title">Moons</h3>
+							</div>
+							<div class="panel-body" id = "results_moons"></div>
+						</div>
+
+					</div>
+				</div>
+			</div> <!-- end left col -->
+
+			<div class="col-md-6">
+
+				<div id = "okta_server_header">
+					<div class = "panel panel-primary">
+						<div class = "panel-heading"><b>Okta tokens</b></div>
+
+						<div class = "panel-body" id="">
+							<ul>
+							<li>Raw access token and id token are availabile in the console</li>
+							<li>Raw tokens and decoded tokens should stay server-side</li>
+							<li>They are shown here for demo purposes only</li>
+						</div>
+					</div>
+				</div>
+
+				<div id = "access_token_div">
+					<div class = "panel panel-success">
+						<div class = "panel-heading">Access token, decoded:</div>
+						<div class = "panel-body" id="access_token_decoded">[none]</div>
+					</div>
+				</div>
+
+				<div id = "id_token_div">
+					<div class = "panel panel-success">
+						<div class = "panel-heading">ID token, decoded:</div>
+						<div class = "panel-body" id="id_token_decoded">[none]</div>
+					</div>
+				</div>
+			</div>
+	</div>
+
+</div>
+</body>
+</html>

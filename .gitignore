@@ -1,0 +1,8 @@
+.DS_Store
+/config/app_settings.json
+/node_modules
+npm-debug.log
+.env
+!.env_example
+package-lock.json
+/okta_bootstrap/output

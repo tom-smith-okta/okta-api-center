@@ -1,0 +1,15 @@
+{
+  "name": "okta-api-am",
+  "version": "1.0.0",
+  "description": "okta integrations with api gateways",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "engines": {
+    "node": "6.11.3"
+  },
+  "author": "tom.smith@okta.com",
+  "dependencies": {
+  }
+}

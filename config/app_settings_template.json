@@ -1,0 +1,12 @@
+{
+  "OKTA_TENANT": "",
+  "AUTHN_CLIENT_ID": "",
+  "AUTHN_CLIENT_SECRET": "",
+  "OKTA_AZ_SERVER_ISSUER": "",
+  "PORT": "",
+  "REDIRECT_URI": "",
+  "FAKE_USER_PASSWORD": "",
+  "PROXY_URI": "",
+  "SILVER_USERNAME": "",
+  "GOLD_USERNAME": ""
+}
