@@ -38,7 +38,7 @@ function get_template() {
 
 		var template = arr[1]
 
-		var file_path = './config/' + template + '_settings_template.json'
+		var file_path = './config/templates/' + template + '_settings_template.json'
 
 		fs.readFile(file_path, 'utf8', (error, data) => {
 			if (error) { reject(error) }
@@ -110,7 +110,7 @@ function get_template() {
 
 			console.log("-----------------------------")
 
-			fs.writeFile("./config/" + template + "_settings.json", JSON.stringify(output, null, 2), "utf8", (err) => {
+			fs.writeFile("./config/instances/" + template + "_settings.json", JSON.stringify(output, null, 2), "utf8", (err) => {
 
 				if (err) console.log(err)
 

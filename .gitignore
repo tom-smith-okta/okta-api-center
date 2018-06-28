@@ -1,6 +1,5 @@
 .DS_Store
-/config/app_settings.json
-/config/mulesoft_settings.json
+/config/instances
 /node_modules
 npm-debug.log
 .env
