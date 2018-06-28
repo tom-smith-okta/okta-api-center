@@ -16,7 +16,7 @@ var session = require("express-session")
 /************************************************/
 /* Load config file */
 
-global.CONFIG = require("./config/app_settings.json")
+global.CONFIG = require("./config/instances/app_settings.json")
 
 /************************************************/
 
