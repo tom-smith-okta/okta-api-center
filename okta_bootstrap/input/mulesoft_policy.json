@@ -94,7 +94,7 @@
 				},
 				"scopes": {
 					"include": [
-						"{{GOLD_SCOPE_NAME}}", "openid"
+						"{{GOLD_SCOPE_NAME}}", "{{SILVER_SCOPE_NAME}}", "openid"
 					]
 				}
 			},
