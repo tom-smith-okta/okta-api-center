@@ -97,22 +97,6 @@
 		"objType": "string",
 		"default": "{{OKTA_AZ_SERVER.issuer}}/v1/introspect"
 	},
-	"BRONZE_GROUP": {
-		"saveToOutput": true,
-		"objType": "json",
-		"objectClass": "okta:user_group",
-		"default": {
-			"profile": {
-				"name": "solar_system_users {{TAG}}",
-				"description": "All solar system users"
-			}
-		}
-	},
-	"BRONZE_GROUP_ID": {
-		"saveToOutput": true,
-		"objType": "string",
-		"default": "{{BRONZE_GROUP.id}}"
-	},
 	"SILVER_GROUP": {
 		"saveToOutput": true,
 		"objType": "json",
@@ -169,31 +153,6 @@
 		"hint": "Answer to recovery question for fake users",
 		"default": "Okta"
 	},
-	"BRONZE_USER": {
-		"saveToOutput": true,
-		"objType": "json",
-		"objectClass": "okta:user",
-		"default": {
-			"profile": {
-				"firstName": "{{GENERATE_FIRSTNAME}}",
-				"lastName": "{{GENERATE_LASTNAME}}",
-				"email": "{{FIRSTNAME}}.{{LASTNAME}}@{{FAKE_USER_DOMAIN}}",
-				"login": "{{FIRSTNAME}}.{{LASTNAME}}@{{FAKE_USER_DOMAIN}}"
-			},
-			"credentials": {
-				"password" : {
-					"value": "{{FAKE_USER_PASSWORD}}"
-				},
-				"recovery_question": {
-					"question": "{{FAKE_USER_RECOVERY_QUESTION}}",
-					"answer": "{{FAKE_USER_RECOVERY_ANSWER}}"
-				}
-			},
-			"groupIds": [
-				"{{BRONZE_GROUP.id}}"
-			]
-		}
-	},
 	"SILVER_USER": {
 		"saveToOutput": true,
 		"objType": "json",
@@ -215,21 +174,9 @@
 				}
 			},
 			"groupIds": [
-				"{{BRONZE_GROUP.id}}", "{{SILVER_GROUP.id}}"
+				"{{SILVER_GROUP.id}}"
 			]
 		}
-	},
-	"SILVER_USERNAME": {
-		"saveToOutput": true,
-		"objType": "string",
-		"default": {
-			"profile": {
-				"firstName": "{{GENERATE_FIRSTNAME}}",
-				"lastName": "{{GENERATE_LASTNAME}}",
-				"email": "{{FIRSTNAME}}.{{LASTNAME}}@{{FAKE_USER_DOMAIN}}",
-				"login": "{{FIRSTNAME}}.{{LASTNAME}}@{{FAKE_USER_DOMAIN}}"
-			},
-
 	},
 	"GOLD_USER": {
 		"saveToOutput": true,
@@ -252,7 +199,7 @@
 				}
 			},
 			"groupIds": [
-				"{{BRONZE_GROUP.id}}", "{{SILVER_GROUP.id}}", "{{GOLD_GROUP.id}}"
+				"{{SILVER_GROUP.id}}", "{{GOLD_GROUP.id}}"
 			]
 		}
 	},
