@@ -4,19 +4,26 @@ The Okta API Center gives developers a tool to see how easily Okta's API Access 
 
 Okta is a standards-compliant OAuth 2.0 authorization server and a certified OpenID Provider.
 
-## Quick set-up
+## Installing
 
-If you just want to get started and see what this is all about, you just need the following:
+The Okta API Center is a Node.js/Express application.
 
-1. An Okta tenant. If you don't already have one, you can get a free, long-lived tenant at [developer.okta.com](https://developer.okta.com/signup/)
-2. An Okta API Token. Once you've activated your tenant, you can follow the instructions [here](https://developer.okta.com/docs/api/getting_started/getting_a_token) to get a token.
-3. An API Gateway. Today the API center supports the following gateways: Apigee, Amazon API Gateway, and Mulesoft. Support for more gateways is planned. And, please note that as a standards-compliant OAuth 2.0 authorization server and a certified OpenID Provider, Okta works with any solution that supports those standards.
-
-With those items in hand, you can install the node app:
-
-```javascript
+```bash
 npm install
 ```
+
+## How it works
+When the API Center application launches, it looks for a config file:
+
+`/config/instances/app_settings.json`
+
+This file stores the settings that the app needs to work properly.
+
+To create this file, copy and rename the file
+
+`/config/templates/app_settings_template.json`
+
+To get the values for the app_settings file, follow the instructions for your particular API gateway, available in the /gateways folder.
 
 To launch the app
 
@@ -24,19 +31,12 @@ To launch the app
 node app.js
 ```
 
-The API Center reads its settings from the following file:
-
-/config/app_settings.json
-
-Copy and rename the app_settings_template.json file to get started.
-
 ## Gateways
 
-As of today (June 2018) the API Center supports only Mulesoft, but more gateways will be added on a regular basis.
+As of today (July 2018) the API Center supports:
 
-Follow the instructions for setting up your API Gateway.
-
-The Okta API Center has been designed to work with the Okta bootstrapper prototyping tool, but using this tool is not required.
+* Mulesoft
+* Kong
 
 ## Overview
 
@@ -63,8 +63,7 @@ And a (partial!) list of the moons: https://okta-api-am.herokuapp.com/moons
 For demo purposes, the API is wide open. In a real-world use-case you would of course lock down the API so that it could only be accessed through your gateway.
 
 ### API Gateway
-To set up Okta as an authorization server for your gateway, follow the instructions for your gateway:
-* Mulesoft
+To set up Okta as an authorization server for your gateway, follow the instructions for your gateway in the /gateways directory.
 
 ### Application
 The application that coordinates all of the components and UI is the node app.js application included in this repo. The application loads all of the configuration values and launches a web server (Express) to present an end-user UI.

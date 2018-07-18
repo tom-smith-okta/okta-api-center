@@ -30,6 +30,16 @@ module.exports = function (app) {
 		})
 	})
 
+	app.post('/endSession', function(req, res, next) {
+
+		req.session.access_token = ""
+		res.send("removed access token from server-side session");
+
+		// req.session.destroy(function(err) {
+		// 	res.send("destroyed session");
+		// })
+	})
+
 	app.post('/getAccessToken', function(req, res, next) {
 		var code = req.body.code;
 
@@ -115,10 +125,8 @@ module.exports = function (app) {
 
 		var url = CONFIG.PROXY_URI + "/" + req.body.endpoint
 
-		console.log("the config file is: ")
-		console.dir(CONFIG)
-
-		var options = { method: 'GET',
+		var options = {
+			method: 'GET',
 			url: url,
 			headers: {
 				'cache-control': 'no-cache',
@@ -130,15 +138,27 @@ module.exports = function (app) {
 		}
 
 		request(options, function (error, response, body) {
-			if (error) throw new Error(error);
+			if (error) throw new Error(error)
 
-			console.log("******\nresponse from API gateway: ");
+			console.log("******\nresponse from API gateway: ")
+			console.log("the status code is: " + response.statusCode)
 
-			console.log(body);
+			console.log("the body is:")
+			console.log(body)
 
-			res.json(body);
-		});
-	});
+			if (response.statusCode == 403) {
+				res.json({message: 'forbidden'})
+				console.log("the request is forbidden")
+			}
+			else if (response.statusCode == 401) {
+				res.json({ message: 'unauthorized' })
+				console.log("the request is unauthorized")
+			}
+			else {
+				res.json(body)
+			}
+		})
+	})
 
 	function getBasicAuthString() {
 

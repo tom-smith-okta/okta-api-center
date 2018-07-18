@@ -55,13 +55,21 @@
 		})
 
 		function log_out() {
-			signIn.session.close(function (err) {
-				if (err) {
-					// errors usually happen bc Okta session does not exist
-					location.reload(true)
+
+			$.ajax({
+				type: 'POST',
+				url: '/endSession',
+				success: function(data) {
+					console.log("server-side session ended.")
+					signIn.session.close(function (err) {
+						if (err) {
+							// errors usually happen bc Okta session does not exist
+							location.reload(true)
+						}
+						console.log("successfully signed user out.")
+						location.reload(true)
+					})
 				}
-				console.log("successfully signed user out.")
-				location.reload(true)
 			})
 		}
 
@@ -162,9 +170,12 @@
 			contentType: 'application/json',
 			url: '/getData',
 			success: function(data) {
-				var obj = JSON.parse(data);
+				console.dir(data)
 
-				console.log("the results are: " + data);
+				var obj
+
+				if (typeof data === 'object') { obj = data }
+				else { obj = JSON.parse(data) }
 
 				$("#results_" + endpoint).html("<pre>" + JSON.stringify(obj, null, 1) + "</pre>");
 			}
@@ -222,12 +233,12 @@
             <ul class="nav navbar-nav">
             	<li><a href="#" onclick="log_out()">Log out / Reload</a></li>
 
-				<li class="dropdown">
+<!-- 				<li class="dropdown">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Gateways <span class="caret"></span></a>
 					<ul class="dropdown-menu">
 						<li><a href="#" onclick="set_gateway('mulesoft')">Mulesoft</a></li>
 					</ul>
-				</li>
+				</li> -->
             </ul>
 
             <ul class="nav navbar-nav navbar-right">
@@ -242,7 +253,6 @@
 			<div class="col-md-6" style="vertical-align: top">
 
 				<p><i>The currently logged-in Okta user is: <span id = "username" style = "font-weight: bold"></span></i></p>
-				<p><i>The current gateway or proxy is: <span id = "gateway" style = "font-weight: bold"></span></i></p>
 
 				<div class = "panel panel-default">
 					<div class = "panel-heading">

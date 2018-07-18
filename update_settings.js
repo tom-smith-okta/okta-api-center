@@ -9,10 +9,6 @@ var output = {}
 
 var sources = {}
 
-sources.app = ["mulesoft_idp", "mulesoft_policy"]
-
-sources.mulesoft = ["mulesoft_idp"]
-
 ///////////////////////////////////////////////////////
 
 get_template()
@@ -26,7 +22,7 @@ function get_template() {
 		var msg = ""
 		if (!(process.argv[2])) {
 			msg += "Sorry, you must provide the name of a template like this:"
-			msg += "\n   node write_settings.js --app"
+			msg += "\n   node update_app_settings.js --app"
 			msg += "\n   where /config/app_settings_template.json"
 			msg += "\n   is the template you want to use."
 			reject(msg)
@@ -38,13 +34,21 @@ function get_template() {
 
 		var template = arr[1]
 
+		if (template === "app" || template === "mulesoft") {
+			sources.app = ["mulesoft_idp", "mulesoft_policy"]
+
+			sources.mulesoft = ["mulesoft_idp"]
+		}
+		else {
+			sources[template] = [template]
+		}
+
 		var file_path = './config/templates/' + template + '_settings_template.json'
 
 		fs.readFile(file_path, 'utf8', (error, data) => {
 			if (error) { reject(error) }
 
 			var my_sources = {}
-
 
 			for (var i in sources[template]) {
 
@@ -60,15 +64,25 @@ function get_template() {
 				console.log("looking for: " + key + "...")
 
 				var found = false
-				// this first clause is a hack to get around bootstrap inability to handle
-				// deep values in objects
+
+				// ugh, this bit of logic is a hack with no easy workaround atm
 				if (key === "SILVER_USERNAME" || key === "GOLD_USERNAME") {
 					var login
 					if (key === "SILVER_USERNAME") {
-						login = my_sources["mulesoft_idp"].SILVER_USER.profile.login
+						if ("mulesoft_idp" in my_sources) {
+							login = my_sources["mulesoft_idp"].SILVER_USER.profile.login
+						}
+						else {
+							login = my_sources[template].SILVER_USER.profile.login
+						}
 					}
 					else {
-						login = my_sources["mulesoft_idp"].GOLD_USER.profile.login
+						if ("mulesoft_idp" in my_sources) {
+							login = my_sources["mulesoft_idp"].GOLD_USER.profile.login
+						}
+						else {
+							login = my_sources[template].GOLD_USER.profile.login
+						}
 					}
 
 					var arr = login.split("@")
@@ -110,11 +124,11 @@ function get_template() {
 
 			console.log("-----------------------------")
 
-			fs.writeFile("./config/instances/" + template + "_settings.json", JSON.stringify(output, null, 2), "utf8", (err) => {
+			fs.writeFile("./config/instances/app_settings.json", JSON.stringify(output, null, 2), "utf8", (err) => {
 
 				if (err) console.log(err)
 
-				else { console.log("updated " + template + "_settings.json")}
+				else { console.log("updated config/instances/app_settings.json")}
 			})
 		})
 	})
