@@ -20,7 +20,7 @@ At the end of this setup, you'll have an architecture where:
 ## Prerequisites for integrating Okta + Kong
 
 1. **An Okta account.** If you don't already have one, you can get a free-forever account at [developer.okta.com](https://developer.okta.com/signup/)
-2. **Kong Enterprise.** In this example we'll be using the OIDC plug-in for Kong, which is only available for Kong Enterprise. If you don't already have a Kong Enterprise account, you can get a 30-day trial [here](https://konghq.com/free-trial/‎).
+2. **Kong Enterprise.** In this example we'll be using the OIDC plug-in for Kong, which is only available for Kong Enterprise. If you don't already have a Kong Enterprise account, you can get a 30-day trial [here](https://konghq.com/free-trial/).
 
 ### Step-by-step
 The high-level process we are going to follow is:
