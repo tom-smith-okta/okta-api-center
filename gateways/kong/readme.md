@@ -20,7 +20,7 @@ At the end of this setup, you'll have an architecture where:
 ## Prerequisites for integrating Okta + Kong
 
 1. **An Okta account.** If you don't already have one, you can get a free-forever account at [developer.okta.com](https://developer.okta.com/signup/)
-2. **Kong Enterprise.** In this example we'll be using the OIDC plug-in for Kong, which is only available for Kong Enterprise. If you don't already have a Kong Enterprise account, you can get a 30-day trial [here](https://konghq.com/free-trial/‎).
+2. **Kong Enterprise.** In this example we'll be using the [OpenID Connect (OIDC) plug-in for Kong](https://docs.konghq.com/plugins/ee-openid-connect/), which is only available for Kong Enterprise. If you don't already have a Kong Enterprise account, you can get a 30-day trial [here](https://konghq.com/free-trial/).
 
 ### Step-by-step
 The high-level process we are going to follow is:
@@ -67,7 +67,7 @@ There are a couple of values you should fill in now, such as `OKTA_TENANT` and `
 
 ## Set up Kong
 
-Make sure you have Kong up and running. If you have not yet set up your Kong tenant, you might want to check out their [5-minute quickstart](https://docs.konghq.com/enterprise/0.33-x/getting-started/quickstart/).
+Make sure you have Kong up and running. If you have not yet set up your Kong tenant, you might want to check out their [5-minute quickstart](https://docs.konghq.com/enterprise/latest/getting-started/quickstart/).
 
 For now, you just need the URL of your Kong instance. The Kong API gateway typically runs on port 8000, so your url should look something like this:
 
