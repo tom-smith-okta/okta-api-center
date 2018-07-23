@@ -4,13 +4,7 @@ This integration guide describes how to integrate Okta's API Access Management (
 
 The integration described here is an authorization-tier integration; authentication will be happening outside of Kong. A web application will handle authentication vs. Okta, acquiring an access token, and sending that access token to Kong on behalf of the end-user.
 
-If you are instead interested in a scenario where Kong itself handles authentication vs. Okta, and passes user info to upstream apps, please see the blog post [here](https://developer.okta.com/blog/2017/12/04/use-kong-gateway-to-centralize-authentication). 
-
-## Prerequisites for integrating Okta + Kong
-
-1. **An Okta account.** If you don't already have one, you can get a free-forever account at [developer.okta.com](https://developer.okta.com/signup/)
-2. **An Okta API Token.** Once you've activated your Okta tenant, you can follow the instructions [here](https://developer.okta.com/docs/api/getting_started/getting_a_token) to get an API token.
-3. **Kong Enterprise.** In this example we'll be using the OIDC plugin for Kong, which is only available for Kong Enterprise. If you don't already have a Kong Enterprise account, you can get a 30-day trial [here](https://konghq.com/free-trial/‎).
+If you are instead interested in a scenario where Kong itself handles authentication vs. Okta, and passes user info to upstream apps, please see the blog post [here](https://developer.okta.com/blog/2017/12/04/use-kong-gateway-to-centralize-authentication).
 
 ## What You'll Build
 
@@ -23,6 +17,54 @@ At the end of this setup, you'll have an architecture where:
 5. If the token and scopes are valid, Kong will send the request on to the API
 6. The API will send the data payload to the gateway, which will send it on to the application
 
+## Prerequisites for integrating Okta + Kong
+
+1. **An Okta account.** If you don't already have one, you can get a free-forever account at [developer.okta.com](https://developer.okta.com/signup/)
+2. **Kong Enterprise.** In this example we'll be using the OIDC plug-in for Kong, which is only available for Kong Enterprise. If you don't already have a Kong Enterprise account, you can get a 30-day trial [here](https://konghq.com/free-trial/‎).
+
+### Step-by-step
+The high-level process we are going to follow is:
+
+1. Set up your Okta tenant
+2. Set up your API in Kong
+3. Set up and launch your application
+
+In the last step, we'll launch the sample application that will show the end-to-end flow. This sample application requires a few settings - environment variables - to launch. To manage these environment variables, the application uses the [dotenv npm package](https://www.npmjs.com/package/dotenv). There is an example .env file in the repo called `.env_example`. Copy the `.env_example` file now to a file called `.env`.
+
+This is what the .env_example file looks like:
+
+```
+# Okta settings
+
+# example: https://dev-511902.oktapreview.com
+OKTA_TENANT=""
+
+OKTA_API_TOKEN=""
+AUTHN_CLIENT_ID=""
+AUTHN_CLIENT_SECRET=""
+
+# example: https://dev-511902.oktapreview.com/oauth2/ausfqw42xrkmpfDHI0h7
+OKTA_AZ_SERVER_ISSUER=""
+
+# Gateway/Proxy base url
+# example: http://52.14.100.89:8080/solar-system
+PROXY_URI=""
+
+# App settings
+PORT="8080"
+REDIRECT_URI="http://localhost:8080"
+SILVER_USERNAME=""
+GOLD_USERNAME=""
+FAKE_USER_PASSWORD=""
+SESSION_SECRET="some random phrase"
+SESSION_MAX_AGE=60000
+
+# Supported values: kong, mulesoft, tyk
+GATEWAY=""
+```
+
+There are a couple of values you should fill in now, such as `OKTA_TENANT` and `GATEWAY`. I will point out when we generate the other values along the way; you can either enter them in your `.env` file as you go, or do it all at the end. There is a helper script that will gather the settings for you at the end.
+
 ## Set up Kong
 
 Make sure you have Kong up and running. If you have not yet set up your Kong tenant, you might want to check out their [5-minute quickstart](https://docs.konghq.com/enterprise/0.33-x/getting-started/quickstart/).
@@ -31,46 +73,30 @@ For now, you just need the URL of your Kong instance. The Kong API gateway typic
 
 http://localhost:8000
 
-or 
+or
 
 http://ec2-18-24-32-111.us-east-2.compute.amazonaws.com:8000
 
-This will be the `PROXY_URI` value that you will use shortly.
+This is the `PROXY_URI` that you need to enter in the `.env` file.
 
-## Download and Install the Okta API Center Application
+## Set up your Okta tenant
 
-Go to GitHub and clone the [Okta API Center](https://github.com/tom-smith-okta/okta-api-center) Node.js application. Then follow through the [README](https://github.com/tom-smith-okta/okta-api-center#okta-api-center) instructions to get it installed.
+To properly demonstrate OAuth as a Service, you need a number of elements in your Okta tenant: users, groups, an authorization server, scopes, policies, and rules. You have a couple of options to set these up:
 
-## Configure the Node.js Application
+* You can use the Okta bootstrap tool. That’s what I’m going to assume for the rest of these instructions.
+* You can set up your Okta tenant "manually", with Okta's easy-to-use admin UI. Instructions are provided at the end of this guide.
 
-The Okta API Center application needs only a few settings configured to launch. If you want to take a peek now, these settings can be found in the `./config/templates/app_settings_template.json` file.
+If you're going to use the Okta bootstrap tool, add your Okta API token to your `.env` file.
 
-You have two approaches to initialize these settings, and more importantly, to set up the policies, rules, scopes, group memberships, etc. on the Okta side:
-
-* You can use the Okta bootstrapping tool. That’s what I’m going to assume for the bulk of this article.
-* You can set up your Okta tenant manually. Instructions are provided at the end of this article.
-
-## Set up the Application Environment
-
-Now let’s configure your environment. The Okta API Center uses the [dotenv npm package](https://www.npmjs.com/package/dotenv) to help manage environment variables, so you can add these values to a `.env` file if you wish. There is a `.env_example` file included in the repo for reference, which looks like this:
-```
-OKTA_TENANT="https://dev-292102.oktapreview.com"
-OKTA_API_TOKEN="yourAPItoken"
-REDIRECT_URI="http://localhost:8080"
-PORT="8080"
-SESSION_SECRET="some random phrase"
-SESSION_MAX_AGE=60000
-PROXY_URI=""
-```
-(Please note that the value for `PORT` should be the same value from `REDIRECT_URI`.)
-
-Copy the `.env_example` file to `.env` and update the values.
+To get an Okta API token, you can follow the instructions [here](https://developer.okta.com/docs/api/getting_started/getting_a_token).
 
 ## Configure your Okta Account
 
 To set up your Okta tenant with all of the components needed for this example such as users, groups, authorization servers, etc., we'll run a bootstrap script.
 
-> NOTE: if you'd like to set up your tenant manually, rather than using the bootstrap tool, there are step-by-step instructions at the end of this article.
+Make sure you've added an Okta API token to the `.env` file, and make sure you're OK with the default values for REDIRECT_URI and PORT. These values will be used to set up the OIDC client and launch the node app.
+
+> NOTE: again, if you'd like to set up your tenant manually, rather than using the bootstrap tool, there are step-by-step instructions at the end of this article.
 
 To set up your Okta tenant for this example, you can just use the "standard" Okta API Access Management setup.
 
@@ -106,9 +132,9 @@ Press C (or enter) to continue.
 
 The bootstrap tool iterates through the values in the input file, pausing to ask if you want to accept each value. You can enter "a" to accept all remaining values without pausing.
 
-We now have Okta objects - most importantly a client_id and and authorization server - that we can use with Kong to ensure that access tokens are checked properly.
+When the bootstrap process completes, we have Okta objects - most importantly a client_id and and authorization server - that we can use with Kong to ensure that access tokens are checked properly.
 
-These values are stored in the file  `/okta_bootstrap/output/standard.json`. You can take a look at that file now; we'll use those values in a moment.
+These values are stored in the file `/okta_bootstrap/output/standard.json`. You can take a look at that file now if you're curious about the output. Later on we'll run a script to extract the values we need for your `.env` file.
 
 ### Whitelist your redirect_uri
 One step needs to be done manually in your Okta tenant before launching your app: whitelisting your redirect_uri.
@@ -150,10 +176,10 @@ You will get a json object as a result:
 Copy the `id` value from the result. Note: make sure you copy the _route_ id, which is the last value, and not the _service_ id.
 
 ### Add the OIDC plugin to the /planets route
-Update the values for route_id, config.issuer, and config.client_id in the command below. You can find the OKTA_AZ_SERVER_ISSUER and the CLIENT_ID values in the bootstrap output file:
+Update the values for route_id, config.issuer, and config.client_id in the command below. You can find the OKTA_AZ_SERVER_ISSUER and the AUTHN_CLIENT_ID values in the bootstrap output file:
 `/okta_bootstrap/output/standard.json`
 
- and then execute this command:
+and then execute this command:
 ```
 curl -i -X POST \
   --url http://localhost:8001/services/solar-system/plugins/ \
@@ -195,15 +221,19 @@ curl -i -X POST \
 
 That completes the setup for Kong. We now have an API gateway (Service) and two resources (Routes) that are secured with scopes.
 
-## Launch the Node Application
+## Get the app settings
 
-If you've been using the Okta bootstrap tool, run a script to gather the settings that the app will need:
+If you've been using the Okta bootstrap tool, you can run a script to gather the remaining settings that the app will need. In your `.env` file, make sure you've set the value
+
+`GATEWAY="kong"`
+
+Now, run the helper script that will gather your app settings for you. The script will display the settings on the screen and also save them to an output file so that you can refer to them later if you need to.
 
 ```bash
-node update_settings.js --standard
+node get_settings.js
 ```
 
-Otherwise, you can update the values in `./config/instances/app_settings.json` manually.
+Take these settings and update your `.env` file with any values that still need to be added.
 
 You can now launch your app:
 
@@ -288,7 +318,7 @@ The API Center application renders two user authentication/authorization flows: 
 
 Follow the steps above to add your REDIRECT_URI as a Trusted Origin in your Okta tenant
 
-Copy the file /config/templates/standard_settings_template.json to /config/instances/app_settings.json. Update the values in app_settings.json and save.
+Update your `.env` and save.
 
 Launch the web app!
 

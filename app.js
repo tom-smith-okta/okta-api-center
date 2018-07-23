@@ -13,20 +13,20 @@ var session = require("express-session")
 
 ///////////////////////////////////////////////////
 
-var config_path = "./config/instances/app_settings.json"
-var template_path = "./config/templates/app_settings_template.json"
+// var config_path = "./config/instances/app_settings.json"
+// var template_path = "./config/templates/app_settings_template.json"
 
-/************************************************/
-/* Load config file */
+// /************************************************/
+// /* Load config file */
 
-if (fs.existsSync(config_path)) {
-	global.CONFIG = require(config_path)
-}
-else {
-	console.log("Error: there must be a config file at " + config_path)
-	console.log("Copy the template file at " + template_path + " to make the config file.")
-	process.exit()
-}
+// if (fs.existsSync(config_path)) {
+// 	global.CONFIG = require(config_path)
+// }
+// else {
+// 	console.log("Error: there must be a config file at " + config_path)
+// 	console.log("Copy the template file at " + template_path + " to make the config file.")
+// 	process.exit()
+// }
 
 /************************************************/
 
@@ -43,6 +43,6 @@ app.use(bodyParser.json())
 
 require('./routes.js')(app)
 
-app.listen(CONFIG.PORT, function () {
-	console.log('App listening on port ' + CONFIG.PORT + "...")
+app.listen(process.env.PORT, function () {
+	console.log('App listening on port ' + process.env.PORT + "...")
 })

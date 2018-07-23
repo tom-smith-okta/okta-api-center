@@ -1,7 +1,6 @@
 // Okta Bootstrap launcher
 
 ////////////////////////////////////////////////////
-require('dotenv').config()
 
 var bootstrap = require("okta-bootstrapper")
 

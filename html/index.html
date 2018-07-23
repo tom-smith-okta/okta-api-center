@@ -31,6 +31,21 @@
 
 	<script>
 
+		var gateway = "{{GATEWAY}}"
+		console.log("the gateway is: " + gateway)
+
+		var silver_username = "{{SILVER_USERNAME}}"
+		var gold_username = "{{GOLD_USERNAME}}"
+
+		var arr
+
+		arr = silver_username.split("@")
+		console.dir(arr)
+		silver_username = arr[0]
+
+		arr = gold_username.split("@")
+		gold_username = arr[0]
+
 		var signIn = new OktaSignIn(
 			{
 				baseUrl: '{{OKTA_TENANT}}'
@@ -55,12 +70,11 @@
 		})
 
 		function log_out() {
-
 			$.ajax({
 				type: 'POST',
 				url: '/endSession',
 				success: function(data) {
-					console.log("server-side session ended.")
+					console.log("server-side access token cleared.")
 					signIn.session.close(function (err) {
 						if (err) {
 							// errors usually happen bc Okta session does not exist
@@ -74,17 +88,10 @@
 		}
 
 		window.onload = function() {
-			var gateway
 
-			if (localStorage.getItem("gateway")) {
-
-				gateway = localStorage.getItem("gateway")
-
-				$("#gateway").html(gateway)
-			}
-			else {
-				$("#gateway").html("[none]")
-			}
+			$("#silver_username").html(silver_username)
+			$("#gold_username").html(gold_username)
+			$("#gateway").html(gateway)
 
 			// look for login url in local storage
 			// just for reference
@@ -111,11 +118,6 @@
 					getAccessToken(urlParams.code)
 				}
 			}
-		}
-
-		function set_gateway(gateway) {
-			localStorage.setItem("gateway", gateway)
-			$("#gateway").html(gateway)
 		}
 
 	</script>
@@ -166,7 +168,7 @@
 
 		$.ajax({
 			type: 'POST',
-			data: JSON.stringify({ "endpoint": endpoint, "gateway": localStorage.getItem("gateway") }),
+			data: JSON.stringify({ "endpoint": endpoint, "gateway": "{{GATEWAY}}" }),
 			contentType: 'application/json',
 			url: '/getData',
 			success: function(data) {
@@ -195,13 +197,16 @@
 	function redirectToOkta(level) {
 		var uri = '{{OKTA_AZ_SERVER_ISSUER}}/v1/authorize?response_type=code&client_id={{AUTHN_CLIENT_ID}}&redirect_uri={{REDIRECT_URI}}&response_mode=fragment'
 
-		uri += '&state=' + localStorage.getItem("gateway")
-		uri += '&nonce=' + getNonce();
-		uri += '&prompt=login&scope=openid';
+		uri += '&state=' + gateway
+		uri += '&nonce=' + getNonce()
+		uri += '&prompt=login&scope=openid'
 
-		if (level == "silver" || level == "gold") { uri += " http://myapp.com/scp/silver"; };
+		if (gateway === "tyk") {}
+		else {
+			if (level === "silver" || level === "gold") { uri += " http://myapp.com/scp/silver"; };
 
-		if (level == "gold") { uri += " http://myapp.com/scp/gold"; }
+			if (level === "gold") { uri += " http://myapp.com/scp/gold"; }
+		}
 
 		localStorage.setItem("authURI", uri);
 
@@ -254,6 +259,8 @@
 
 				<p><i>The currently logged-in Okta user is: <span id = "username" style = "font-weight: bold"></span></i></p>
 
+				<p><i>The gateway is: <span id = "gateway" style = "font-weight: bold"></span></i></p>
+
 				<div class = "panel panel-default">
 					<div class = "panel-heading">
 						SILVER Access: A list of the planets
@@ -261,7 +268,7 @@
 					<div class = "panel-body">
 						<div class = "row">
 							<div class = "col-sm-6">
-								<p>silver user: {{SILVER_USERNAME}}
+								<p>silver user: <span id = "silver_username"></span>
 								<br>
 								password: {{FAKE_USER_PASSWORD}}</p>
 							</div>
@@ -292,7 +299,7 @@
 					<div class = "panel-body">
 						<div class = "row">
 							<div class = "col-sm-6">
-								<p>gold user: {{GOLD_USERNAME}}
+								<p>gold user: <span id = "gold_username"></span>
 								<br>
 								password: {{FAKE_USER_PASSWORD}}</p>
 							</div>

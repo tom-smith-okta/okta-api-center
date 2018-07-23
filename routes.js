@@ -12,7 +12,7 @@ var session = require("express-session")
 //*******************************************/
 
 const oktaJwtVerifier = new OktaJwtVerifier({
-	issuer: CONFIG.OKTA_AZ_SERVER_ISSUER
+	issuer: process.env.OKTA_AZ_SERVER_ISSUER
 })
 
 module.exports = function (app) {
@@ -50,11 +50,11 @@ module.exports = function (app) {
 
 		var options = {
 			method: 'POST',
-			url: CONFIG.OKTA_AZ_SERVER_ISSUER + "/v1/token",
+			url: process.env.OKTA_AZ_SERVER_ISSUER + "/v1/token",
 			qs: {
 				grant_type: 'authorization_code',
 				code: code,
-				redirect_uri: CONFIG.REDIRECT_URI
+				redirect_uri: process.env.REDIRECT_URI
 			},
 			headers: {
 				'cache-control': 'no-cache',
@@ -123,7 +123,9 @@ module.exports = function (app) {
 
 		// send the access token to the requested API endpoint
 
-		var url = CONFIG.PROXY_URI + "/" + req.body.endpoint
+		var url = process.env.PROXY_URI + "/" + req.body.endpoint
+
+		console.log("sending request to: " + url)
 
 		var options = {
 			method: 'GET',
@@ -162,7 +164,7 @@ module.exports = function (app) {
 
 	function getBasicAuthString() {
 
-		var x = CONFIG.AUTHN_CLIENT_ID + ":" + CONFIG.AUTHN_CLIENT_SECRET
+		var x = process.env.AUTHN_CLIENT_ID + ":" + process.env.AUTHN_CLIENT_SECRET
 
 		var y = new Buffer(x).toString('base64')
 
@@ -172,10 +174,10 @@ module.exports = function (app) {
 
 function evaluate_vars(page, callback) {
 	var regex
-	for (var key in CONFIG) {
+	for (var key in process.env) {
 		regex = new RegExp('{{' + key + '}}', 'g')
 
-		page = page.replace(regex, CONFIG[key])
+		page = page.replace(regex, process.env[key])
 	}
 	return callback(null, page)
 }
