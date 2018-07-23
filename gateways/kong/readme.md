@@ -67,7 +67,7 @@ There are a couple of values you should fill in now, such as `OKTA_TENANT` and `
 
 ## Set up Kong
 
-Make sure you have Kong up and running. If you have not yet set up your Kong tenant, you might want to check out their [5-minute quickstart](https://docs.konghq.com/enterprise/0.33-x/getting-started/quickstart/).
+Make sure you have Kong up and running. If you have not yet set up your Kong tenant, you might want to check out their [5-minute quickstart](https://docs.konghq.com/enterprise/latest/getting-started/quickstart/).
 
 For now, you just need the URL of your Kong instance. The Kong API gateway typically runs on port 8000, so your url should look something like this:
 
