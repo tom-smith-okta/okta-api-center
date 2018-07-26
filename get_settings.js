@@ -37,13 +37,23 @@ var keys
 
 var gateway
 
-if (settings === "kong" || settings === "mulesoft") {
+if (settings === "aws") {
+	gateway = settings
+
+	template = "aws"
+
+	my_sources[template] = require("./okta_bootstrap/output/aws.json")
+
+	keys = ["ISSUER", "AUDIENCE", "OKTA_TENANT","AUTHN_CLIENT_ID", "AUTHN_CLIENT_SECRET", "OKTA_AZ_SERVER_ISSUER", "PROXY_URI", "PORT", "REDIRECT_URI", "SILVER_USERNAME", "SILVER_PASSWORD", "GOLD_USERNAME", "GOLD_PASSWORD", "SESSION_SECRET", "SESSION_MAX_AGE", "GATEWAY"]
+
+}
+else if (settings === "kong" || settings === "mulesoft") {
 
 	gateway = settings
 
 	template = "standard"
 
-	if (settings === "kong") {
+	if (settings === "kong" || settings === "aws") {
 		my_sources[template] = require("./okta_bootstrap/output/standard.json")
 	}
 	else if (settings === "mulesoft") {

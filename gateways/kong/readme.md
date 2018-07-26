@@ -12,7 +12,7 @@ At the end of this setup, you'll have an architecture where:
 
 1. Users will be able to authenticate against Okta and receive an access token (via the app)
 2. Users will have different scopes in their access token, depending on their group assignments
-3. The application will send the access token to the Kong
+3. The application will send the access token to Kong
 4. Kong will check the validity of the access token locally
 5. If the token and scopes are valid, Kong will send the request on to the API
 6. The API will send the data payload to the gateway, which will send it on to the application
@@ -92,7 +92,7 @@ To get an Okta API token, you can follow the instructions [here](https://develop
 
 ## Configure your Okta Account
 
-To set up your Okta tenant with all of the components needed for this example such as users, groups, authorization servers, etc., we'll run a bootstrap script.
+To set up your Okta tenant with all of the components needed for this example, such as users, groups, authorization servers, etc., we'll run a bootstrap script.
 
 Make sure you've added an Okta API token to the `.env` file, and make sure you're OK with the default values for REDIRECT_URI and PORT. These values will be used to set up the OIDC client and launch the node app.
 
@@ -223,14 +223,12 @@ That completes the setup for Kong. We now have an API gateway (Service) and two 
 
 ## Get the app settings
 
-If you've been using the Okta bootstrap tool, you can run a script to gather the remaining settings that the app will need. In your `.env` file, make sure you've set the value
+If you used the Okta bootstrap tool for setup, you can run a script to gather the remaining settings that the app will need.
 
-`GATEWAY="kong"`
-
-Now, run the helper script that will gather your app settings for you. The script will display the settings on the screen and also save them to an output file so that you can refer to them later if you need to.
+The script will display the settings on the screen and also save them to an output file so that you can refer to them later if you need to.
 
 ```bash
-node get_settings.js
+node get_settings.js --kong
 ```
 
 Take these settings and update your `.env` file with any values that still need to be added.

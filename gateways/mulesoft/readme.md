@@ -1,4 +1,4 @@
-﻿# Secure your API with OAuth, Mulesoft, and Okta in 20 minutes.
+﻿# Integrating Okta with Amazon API Gateway
 
 If you're building or managing an API, you're probably using an API gateway to help you manage it. Hopefully, you're also using OAuth and an identity provider (IdP) like [Okta](https://developer.okta.com/) to secure your API through the gateway. Maybe you've also discovered that getting the "OAuth dance" working properly among the gateway, IdP, and application can be tricky.
 
@@ -160,7 +160,7 @@ You now have an (almost) empty RAML file to design your API.
 Next, copy the RAML template from the Okta API Center repo into the Mulesoft editor.
 
 ```
-/api_specs/okta_mulesoft.raml
+/gateways/mulesoft/mulesoft.raml
 ```
 
 Update the values for `AUTHORIZE_URL` and `TOKEN_URL`.
