@@ -13,17 +13,9 @@ npm install
 ```
 
 ## How it works
-When the API Center application launches, it looks for a config file:
+When the API Center application launches, it looks for its config settings in the environment.
 
-`/config/instances/app_settings.json`
-
-This file stores the settings that the app needs to work properly.
-
-To create this file, copy and rename the file
-
-`/config/templates/app_settings_template.json`
-
-To get the values for the app_settings file, follow the instructions for your particular API gateway, available in the /gateways folder.
+To establish the values for the app, follow the instructions for your particular API gateway, available in the /gateways folder.
 
 To launch the app
 
@@ -35,8 +27,11 @@ node app.js
 
 As of today (July 2018) the API Center supports:
 
-* Mulesoft
+* Amazon API gateway
 * Kong
+* Mulesoft
+* Software AG
+* Tyk
 
 ## Overview
 

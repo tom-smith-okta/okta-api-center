@@ -59,7 +59,7 @@ FAKE_USER_PASSWORD=""
 SESSION_SECRET="some random phrase"
 SESSION_MAX_AGE=60000
 
-# Supported values: kong, mulesoft, tyk
+# Supported values: aws, kong, mulesoft, swag, tyk
 GATEWAY=""
 ```
 
@@ -81,75 +81,14 @@ This is the `PROXY_URI` that you need to enter in the `.env` file.
 
 ## Set up your Okta tenant
 
-To properly demonstrate OAuth as a Service, you need a number of elements in your Okta tenant: users, groups, an authorization server, scopes, policies, and rules. You have a couple of options to set these up:
+To properly demonstrate OAuth as a Service, you need a number of elements in your Okta tenant: a client, users, groups, an authorization server, scopes, policies, and rules. And, you need to establish the proper relationships among them.
 
-* You can use the Okta bootstrap tool. That’s what I’m going to assume for the rest of these instructions.
-* You can set up your Okta tenant "manually", with Okta's easy-to-use admin UI. Instructions are provided at the end of this guide.
+You have a couple of options to set these up:
 
-If you're going to use the Okta bootstrap tool, add your Okta API token to your `.env` file.
+* You can use the Okta bootstrap tool. The Okta bootstrap tool is a "labs" type project. It is the fastest and easiest way to get your tenant set up. Instructions are [here](../okta_setup/okta_setup_bootstrap.md).
+* You can set up your Okta tenant "manually", with Okta's easy-to-use admin UI. Instructions are available [here](../okta_setup/okta_setup_manual.md).
 
-To get an Okta API token, you can follow the instructions [here](https://developer.okta.com/docs/api/getting_started/getting_a_token).
-
-## Configure your Okta Account
-
-To set up your Okta tenant with all of the components needed for this example, such as users, groups, authorization servers, etc., we'll run a bootstrap script.
-
-Make sure you've added an Okta API token to the `.env` file, and make sure you're OK with the default values for REDIRECT_URI and PORT. These values will be used to set up the OIDC client and launch the node app.
-
-> NOTE: again, if you'd like to set up your tenant manually, rather than using the bootstrap tool, there are step-by-step instructions at the end of this article.
-
-To set up your Okta tenant for this example, you can just use the "standard" Okta API Access Management setup.
-
-```bash
-node okta_bootstrap.js --standard
-```
-
-The Okta bootstrap tool will find an input file, which contains the inputs required for initial setup.
-
-```bash
-C02QW118G8WL:okta-api-center tomsmith$ node okta_bootstrap --standard
-Found a valid input file at ./okta_bootstrap/input/standard.json
-sending a request to Okta to test the api token...
-the token works
-
-now, reviewing all values...
-
-looking for TAG...
-cannot find a final value for TAG yet
-calculating/retrieving default value...
-looking at string {{GENERATE_TAG}}
-this is a generated value...
-'autogen20180716-1634'
-Do you want to:
-(C) continue with this value
-(p) provide a new value
-(a) auto-accept and generate all remaining values
-(q) quit
-: c
-```
-
-Press C (or enter) to continue.
-
-The bootstrap tool iterates through the values in the input file, pausing to ask if you want to accept each value. You can enter "a" to accept all remaining values without pausing.
-
-When the bootstrap process completes, we have Okta objects - most importantly a client_id and and authorization server - that we can use with Kong to ensure that access tokens are checked properly.
-
-These values are stored in the file `/okta_bootstrap/output/standard.json`. You can take a look at that file now if you're curious about the output. Later on we'll run a script to extract the values we need for your `.env` file.
-
-### Whitelist your redirect_uri
-One step needs to be done manually in your Okta tenant before launching your app: whitelisting your redirect_uri.
-
-The default value for redirect_uri used in the bootstrap script is:
-
-http://localhost:8080
-
-if you are using a different uri, you should use that one instead.
-
-To add your `REDIRECT_URI` as a Trusted Origin in your Okta tenant:
-
-Go to API->Trusted Origins->Add Origin (if you are using the classic UI, go to Security->API->Trusted Origins->Add Origin).
-
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/okta_trusted_origin.png)
+Go ahead and set up your Okta tenant, then come back to these instructions.
 
 ## Configure Kong
 
@@ -244,82 +183,3 @@ When you load the web app, first try clicking on the "show me the planets" and/o
 Next, try authenticating as one of the users. You'll get an id token and an access token displayed in the browser (in a production environment, you would not do this). The raw tokens are also available in the console if you want to check them out.
 
 Now that the user has a token (actually the token is sitting on the server), you can click on one of the "show me" buttons again to see if you get the requested resource.
-
-----------------
-
-Instructions for those not using the bootstrap tool:
-
-These instructions assume that you are using the Developer Edition of Okta. If you are using the Enterprise version, some of the screen captures and menus may look a little different.
-
-Also, we’re going to use the default authorization server that is built in to the developer edition. If you are using an Enterprise edition of Okta, you will need to set up an authorization server.
-
-### Create an OIDC client
-
-Click “Applications” and then “Add application”.
-
-Choose “Web”, then Next.
-
-Name: Okta Authentication Client
-
-For the Login redirect URIs, add the URI of your application. Throughout this guide, I have been using
-
-`http://localhost:8000`
-
-but you may be using a different URI in your environment.
-
-Click Done.
-
-You’ll get a client id and client secret.
-
-### Create Users and Groups
-Set up a group: Users->Groups->Add Group
-Name the group “silver subscribers”; you can use the same for the description
-Click Add Group
-Add a user: Users->People->Add Person
-In the Groups field, add “silver subscribers”
-Use whatever values you wish for the remaining fields
-Click Save
-
-### Add custom scopes
-API->Authorization Servers->default
-Click the Scopes tab
-Click Add Scope
-Name: http://myapp.com/scp/silver
-Description: Silver scope
-Click Create
-
-### Add a policy
-API->Authorization Servers->default
-Click the Access Policies tab
-Click Add New Access Policy
-Name: Solar system API access
-Description: Solar system API access
-It’s OK to leave it assigned to All clients
-Click Create
-
-### Add a rule
-In your policy, click the Add Rule button
-Rule Name: silver access to planets
-Change the User clause to “Assigned the app and a member of the following:”
-Add the silver subscribers group
-Change the Scopes clause to “The following scopes:”
-Add these scopes:
-http://myapp.com/scp/silver
-openid
-Click “Create Rule”
-
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/okta_add_rule.png)
-
-Your authorization server is now set up so that users in the _silver subscribers_ group who request the “http://myapp.com/scp/silver” scope upon authentication will be granted that scope in their access token. In the API gateway, this scope will give them access to the /planets resource.
-
-The API Center application renders two user authentication/authorization flows: one for a “silver” user (which you’ve just set up) and one for a “gold” user. If you would like to see the flow for a “gold” user (access to /moons) then go through the steps above (starting with the creation of another new group) using “gold” as the keyword in the place of “silver”.
-
-Follow the steps above to add your REDIRECT_URI as a Trusted Origin in your Okta tenant
-
-Update your `.env` and save.
-
-Launch the web app!
-
-```bash
-node app.js
-```

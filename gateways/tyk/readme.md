@@ -89,7 +89,7 @@ FAKE_USER_PASSWORD=""
 SESSION_SECRET="some random phrase"
 SESSION_MAX_AGE=60000
 
-# Supported values: kong, mulesoft, tyk
+# Supported values: aws, kong, mulesoft, swag, tyk
 GATEWAY=""
 ```
 

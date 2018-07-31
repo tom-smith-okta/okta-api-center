@@ -86,6 +86,11 @@
 		"objType": "string",
 		"default": "{{AUTHN_CLIENT.client_secret}}"
 	},
+	"AUDIENCE": {
+		"saveToOutput": true,
+		"objType": "string",
+		"default": "{{PROXY_URI}}"
+	},
 	"OKTA_AZ_SERVER": {
 		"saveToOutput": true,
 		"comment": "The authorization server that we are going to use for authentication and authorization vs. Okta",
@@ -94,7 +99,7 @@
 		"default": {
 			"name": "solar_system_api_auth_server {{TAG}}",
 			"audiences": [
-				"api://default"
+				"{{AUDIENCE}}"
 			]
 		},
 		"oktaEndpoint": "/api/v1/authorizationServers"
@@ -109,15 +114,20 @@
 		"objType": "string",
 		"default": "{{OKTA_AZ_SERVER.issuer}}"
 	},
+	"JWKS_URI": {
+		"saveToOutput": true,
+		"objType": "string",
+		"default": "{{OKTA_AZ_SERVER_ISSUER}}/v1/keys"
+	},
+	"ISSUER": {
+		"saveToOutput": true,
+		"objType": "string",
+		"default": "{{OKTA_AZ_SERVER_ISSUER}}"
+	},
 	"AUTHORIZE_URL": {
 		"saveToOutput": true,
 		"objType": "string",
 		"default": "{{OKTA_AZ_SERVER.issuer}}/v1/authorize"
-	},
-	"TOKEN_URL": {
-		"saveToOutput": true,
-		"objType": "string",
-		"default": "{{OKTA_AZ_SERVER.issuer}}/v1/token"
 	},
 	"FAKE_USER_PASSWORD": {
 		"saveToOutput": false,
