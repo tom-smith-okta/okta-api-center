@@ -5,7 +5,9 @@ Okta can integrate with Software AG in a couple different ways:
 * End-user authentication (OIDC)
 * JWT validation (API Access Management / OAuth as a Service)
 
-This guide will describe the API Access Management integration in detail, where authentication is happening outside of the Software AG workflow. Software AG will be evaluating an access token (jwt) minted by Okta, to see whether the access token is valid and has the appropriate scope(s) for the requested endpoint.
+This guide will describe the API Access Management integration in detail, where authentication is happening outside of the Software AG workflow. Software AG will be evaluating an access token (jwt) minted by Okta, to see whether the access token is valid before granting access to the requested endpoint.
+
+>*Note*: it is important that the API itself also check the validity of the access token when it is passed on from Software AG. The API must inspect the access token for scopes (if applicable), and also at minimum check the values in the `exp` and `aud` fields.
 
 ## What You'll Build
 
@@ -14,9 +16,12 @@ At the end of this setup, you'll have an architecture where:
 1. End-users will be able to authenticate against Okta and receive an access token (via the app)
 2. End-users will have different scopes in their access token, depending on their group assignments
 3. The application will send the access token to the Software AG Gateway
-4. Software AG will check the validity of the access token locally
-5. If the token and scopes are valid, Software AG will send the request on to the API
-6. The API will send the data payload to the gateway, which will send it on to the application
+4. Software AG will check the structural validity and signature of the access token locally
+5. If the token is valid, Software AG will send the request on to the API
+6. The API must also check the token for validity, and determine whether it has the appropriate scopes for the requested endpoint
+7. The API will send the data payload to the gateway, which will send it on to the application
+
+Please note that step 6 is not actually shown in the code or in the demo, but it's something that should be applied in production.
 
 ## Prerequisites for integrating Okta + Software AG API Gateway
 
@@ -99,6 +104,10 @@ In the *Host* field, enter the value for the Okta solar system API:
 
 >*Note*: don't put the protocol in the host field
 
+and
+
+*Base path*: `/`
+
 ![](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/swag/swag_api_tech_information.png)
 
 Then, click *Continue to provide Resource & Methods for this API*
@@ -141,35 +150,7 @@ Enter the value of your Gateway endpoint in your `.env` file as the `PROXY_URI` 
 
 ### Scopes
 
-Now that we've set up a basic API, we can add some scopes and policies.
-
-Click on the *Scopes* tab.
-
-You will see a note saying "There are no scopes available. Start creating by clicking on Edit button"
-
-Software AG will not let you modify an active API. So you may need to click the **Deactivate** button to see to the **Edit** button.
-
-Click the **Edit** button, then click *Add scope*.
-
-Name: `http://myapp.com/scp/silver`
-
-Check the box underneath the `/planets` resource.
-
-![](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/swag/swag_add_silver_scope.png)
-
-Click **Save**
-
-We've added one scope; we need to add one more.
-
-Click **Edit**, then *Add scope*
-
-Add a new scope with
-
-Name: `http://myapp.com/scp/gold`
-
-and check the box underneath the `/moons` resource.
-
-Click **Save**
+Software AG does not check for scopes in access tokens, so we're going to skip the Scopes section and move straight to Policies.
 
 ### Policies
 
@@ -255,13 +236,15 @@ Take these settings and update your `.env` file with any values that still need 
 
 If you did not user the bootstrap tool for setup, refer to your Okta tenant for the appropriate values to enter into the `.env` file.
 
+## Launch the app
+
 You can now launch your app:
 
 ```bash
 node app.js
 ```
 
-When you load the web app, first try clicking on the "show me the planets" and/or the "show me the moons" buttons. You'll get an error notifying you that you need an access token.
+When you load the web app, first try clicking on the "show me the planets" and/or the "show me the moons" buttons. You'll get an error from the API Gateway.
 
 Next, try authenticating as one of the users. You'll get an id token and an access token displayed in the browser (in a production environment, you would not do this). The raw tokens are also available in the console if you want to check them out.
 
