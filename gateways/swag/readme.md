@@ -1,13 +1,20 @@
 # Integrating Okta with Software AG
 
-Okta can integrate with Software AG in a couple different ways:
+Okta can integrate with Software AG in several different ways:
 
 * End-user authentication (OIDC)
-* JWT validation (API Access Management / OAuth as a Service)
+* JWT validation
+* OAuth 2
 
-This guide will describe the API Access Management integration in detail, where authentication is happening outside of the Software AG workflow. Software AG will be evaluating an access token (jwt) minted by Okta, to see whether the access token is valid before granting access to the requested endpoint.
+Software AG's OAuth 2 integration is relatively broad and deep, including capabilities such as dynamic client registration, and creating scopes in Okta via the Software AG UI. Okta is a predefined third-party OAuth 2 provider in Software AG.
 
->*Note*: it is important that the API itself also check the validity of the access token when it is passed on from Software AG. The API must inspect the access token for scopes (if applicable), and also at minimum check the values in the `exp` and `aud` fields.
+That integration is most likely the integration you would want to use in production, and it is described [here](http://techcommunity.softwareag.com/web/guest/pwiki/-/wiki/Main/Securing+APIs+using+thirdparty+OAuth2+identity+provider+in+API+Gateway).
+
+If you want to get familiar with the basics of Software AG and Okta, this guide will describe the lighter-weight jwt validation integration. Software AG will be evaluating an access token (jwt) minted by Okta, to see whether the access token is valid before granting access to the requested endpoint.
+
+>*Note*: in a production environment, it is extremely important that the API itself also check the validity of the access token when it is passed on from Software AG. The API must inspect the access token for scopes (if applicable), and also at minimum check the values in the `exp` and `aud` fields.
+
+Again, if you are more interested in the full capabilities of the OAuth 2 integration between Software AG and Okta, please see their tutorial: [Securing APIs using thirdparty OAuth2 identity provider in API Gateway](http://techcommunity.softwareag.com/web/guest/pwiki/-/wiki/Main/Securing+APIs+using+thirdparty+OAuth2+identity+provider+in+API+Gateway).
 
 ## What You'll Build
 
@@ -16,7 +23,7 @@ At the end of this setup, you'll have an architecture where:
 1. End-users will be able to authenticate against Okta and receive an access token (via the app)
 2. End-users will have different scopes in their access token, depending on their group assignments
 3. The application will send the access token to the Software AG Gateway
-4. Software AG will check the structural validity and signature of the access token locally
+4. Software AG will check the structural validity and signature of the access token
 5. If the token is valid, Software AG will send the request on to the API
 6. The API must also check the token for validity, and determine whether it has the appropriate scopes for the requested endpoint
 7. The API will send the data payload to the gateway, which will send it on to the application
