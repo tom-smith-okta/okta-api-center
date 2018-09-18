@@ -130,10 +130,20 @@
 		"default": "{{GOLD_GROUP.id}}"
 	},
 	"FAKE_USER_PASSWORD": {
-		"saveToOutput": true,
+		"saveToOutput": false,
 		"hint": "This password will be used for all fake users.",
 		"objType": "string",
 		"default": "{{GENERATE_PASSWORD}}"
+	},
+	"SILVER_PASSWORD": {
+		"saveToOutput": true,
+		"objType": "string",
+		"default": "{{FAKE_USER_PASSWORD}}"
+	},
+	"GOLD_PASSWORD": {
+		"saveToOutput": true,
+		"objType": "string",
+		"default": "{{FAKE_USER_PASSWORD}}"
 	},
 	"FAKE_USER_DOMAIN": {
 		"saveToOutput": false,

@@ -5,5 +5,5 @@ npm-debug.log
 .env*
 !.env_example*
 package-lock.json
-/okta_bootstrap/output
+/okta_bootstrap/output/*
 *snapshot_*.json

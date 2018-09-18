@@ -15,11 +15,11 @@ npm install
 ## How it works
 When the API Center application launches, it looks for its config settings in the environment.
 
-To establish the values for the app, follow the instructions for your particular API gateway, available in the /gateways folder.
+To establish the values for the app, follow the instructions for your particular API gateway, available in the `/gateways` folder.
 
 To launch the app
 
-```javascript
+```bash
 node app.js
 ```
 

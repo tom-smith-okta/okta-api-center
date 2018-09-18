@@ -2,7 +2,7 @@
 	"DATA_SOURCE": {
 		"objType": "data",
 		"saveToOutput": true,
-		"default": "mulesoft_idp"
+		"default": "mulesoft"
 	},
 	"TAG": {
 		"hint": "this is a unique string to help identify objects created by this bootstrap session",
