@@ -183,8 +183,8 @@ To properly demonstrate OAuth as a Service, you need a number of elements in you
 
 You have a couple of options to set these up:
 
-* You can use the Okta bootstrap tool. The Okta bootstrap tool is a "labs" type project. It is the fastest and easiest way to get your tenant set up. Instructions are [here](../okta_setup/okta_setup_bootstrap.md).
-* You can set up your Okta tenant "manually", with Okta's easy-to-use admin UI. Instructions are available [here](../okta_setup/okta_setup_manual.md).
+* You can use the Okta bootstrap tool. The Okta bootstrap tool is a "labs" type project. It is the fastest and easiest way to get your tenant set up. Instructions are [here](../../okta_setup/okta_setup_bootstrap.md).
+* You can set up your Okta tenant "manually", with Okta's easy-to-use admin UI. Instructions are available [here](../../okta_setup/okta_setup_manual.md).
 
 Go ahead and set up your Okta tenant, then come back to these instructions.
 
