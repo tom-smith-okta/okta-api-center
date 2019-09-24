@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<VerifyJWT async="false" continueOnError="false" enabled="true" name="Verify-JWT-1">
+    <DisplayName>Verify-JWT-1</DisplayName>
+    <FaultRules/>
+    <Properties/>
+    <Algorithm>RS256</Algorithm>
+    <CustomClaims/>
+    <CustomHeaders/>
+    <IgnoreUnresolvedVariables>false</IgnoreUnresolvedVariables>
+    <Issuer>https://partnerpoc.oktapreview.com/oauth2/ausce8ii5wBzd0zvQ0h7</Issuer>
+    <PublicKey>
+        <JWKS ref="cached.okta.jwks"/>
+    </PublicKey>
+    <Source>inbound.jwt</Source>
+</VerifyJWT>

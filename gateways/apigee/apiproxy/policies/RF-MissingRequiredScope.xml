@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RaiseFault async="false" continueOnError="false" enabled="true" name="RF-MissingRequiredScope">
+    <DisplayName>RF-MissingRequiredScope</DisplayName>
+    <Properties/>
+    <FaultResponse>
+        <Set>
+            <Payload contentType="application/json">{
+                "error" : {
+                    "code" : 403,
+                    "message" : "missing required scope for that endpoint"
+                }
+            }
+            </Payload>
+            <StatusCode>403</StatusCode>
+            <ReasonPhrase>Not Authorized</ReasonPhrase>
+        </Set>
+    </FaultResponse>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</RaiseFault>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RaiseFault async="false" continueOnError="false" enabled="true" name="RF-TestTokenOK">
+    <DisplayName>RF-TestTokenOK</DisplayName>
+    <Properties/>
+    <FaultResponse>
+        <Set>
+            <Payload contentType="application/json">{
+                    "jti" : "{jwt.Verify-JWT-1.id}",
+                    "secondsRemaining" : {jwt.Verify-JWT-1.seconds_remaining},
+                    "timeRemainingFormatted" : "{jwt.Verify-JWT-1.time_remaining_formatted}"
+                }
+            </Payload>
+            <StatusCode>200</StatusCode>
+            <ReasonPhrase>OK</ReasonPhrase>
+        </Set>
+    </FaultResponse>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</RaiseFault>

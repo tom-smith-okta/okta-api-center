@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<PopulateCache async="false" continueOnError="false" enabled="true" name="CacheInsert-OktaJwks">
+    <DisplayName>CacheInsert-OktaJwks</DisplayName>
+    <FaultRules/>
+    <Properties/>
+    <CacheKey>
+        <Prefix>oktajwks</Prefix>
+        <KeyFragment>1</KeyFragment>
+    </CacheKey>
+    <CacheResource>cache1</CacheResource>
+    <Scope>Application</Scope>
+    <ExpirySettings>
+        <TimeoutInSec>3600</TimeoutInSec>
+    </ExpirySettings>
+    <Source>oktaJwksResponse.content</Source>
+</PopulateCache>

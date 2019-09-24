@@ -30,7 +30,9 @@ The high-level process we are going to follow is:
 4. Add the Lambda authorization function to selected resources in your API Gateway
 5. Set up and launch your application
 
-In the last step, we'll launch a sample application that will show the end-to-end flow. This sample application requires a few settings - environment variables - to launch. To manage these environment variables, the application uses the [dotenv npm package](https://www.npmjs.com/package/dotenv). There is an example .env file in the repo called `.env_example`. Copy the `.env_example` file now to a file called `.env`.
+If you haven't already done so, clone this repo to your local machine.
+
+In the last step of this integration, we'll launch a sample application that will show the end-to-end flow. This sample application requires a few settings - environment variables - to launch. To manage these environment variables, the application uses the [dotenv npm package](https://www.npmjs.com/package/dotenv). There is an example .env file in the repo called `.env_example`. Copy the `.env_example` file now to a file called `.env`.
 
 This is what the .env_example file looks like:
 
@@ -176,7 +178,7 @@ The sample application will test two endpoints:
 and
 `/moons`
 
-If you would like to add the `/moons` endpoint, go ahead and do that now, using the same steps you did for `/planets`. We'll assign the different scopes required to access these endpoints when we set up our Lambda authorization function later.
+If you would like to add the `/moons` endpoint, go ahead and do that now, using the same steps you did for `/planets`. The `/moons` endpoint is not required, but it helps to show how different users can have access to different resources. We'll assign the different scopes required to access these endpoints when we set up our Lambda authorization function later.
 
 ## Set up your Okta tenant
 
@@ -220,6 +222,8 @@ and install it
 `npm install`
 
 For the most part, you can just follow the instructions in the `readme` of that repo to set up the authorizer, with the following adjustments:
+
+* In the *Scopes* section, we're going to use our own scopes (see below)
 
 * Stop when you get to the *Testing* section, and come back to this document.
 

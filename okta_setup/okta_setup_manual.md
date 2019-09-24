@@ -23,48 +23,49 @@ Click Done.
 You’ll get a client id and client secret.
 
 ### Create Users and Groups
-Set up a group: Users->Groups->Add Group
-Name the group “silver subscribers”; you can use the same for the description
-Click Add Group
-Add a user: Users->People->Add Person
-In the Groups field, add “silver subscribers”
-Use whatever values you wish for the remaining fields
-Click Save
+1. Set up a group: Users->Groups->Add Group
+2. Name the group “silver subscribers”; you can use the same for the description
+3. Click Add Group
+4. Add a user: Users->People->Add Person
+5. In the Groups field, add “silver subscribers”
+6. Use whatever values you wish for the remaining fields
+7. Click Save
 
 ### Add custom scopes
-API->Authorization Servers->default
-Click the Scopes tab
-Click Add Scope
-Name: http://myapp.com/scp/silver
-Description: Silver scope
-Click Create
+1. API->Authorization Servers->default
+2. Click the Scopes tab
+3. Click Add Scope
+4. Name: http://myapp.com/scp/silver
+5. Description: Silver scope
+6. Click Create
 
 ### Add a policy
-API->Authorization Servers->default
-Click the Access Policies tab
-Click Add New Access Policy
-Name: Solar system API access
-Description: Solar system API access
-It’s OK to leave it assigned to All clients
-Click Create
+1. API->Authorization Servers->default
+2. Click the Access Policies tab
+3. Click Add New Access Policy
+4. Name: Solar system API access
+5. Description: Solar system API access (It’s OK to leave it assigned to All clients)
+6. Click Create Policy
 
 ### Add a rule
-In your policy, click the Add Rule button
-Rule Name: silver access to planets
-Change the User clause to “Assigned the app and a member of the following:”
-Add the silver subscribers group
-Change the Scopes clause to “The following scopes:”
-Add these scopes:
-http://myapp.com/scp/silver
-openid
-Click “Create Rule”
+1. In your policy, click the Add Rule button
+2. Rule Name: silver access to planets
+3. Change the User clause to “Assigned the app and a member of the following:”
+4. Add the silver subscribers group
+5. Change the Scopes clause to “The following scopes:”
+6. Add these scopes:
+* http://myapp.com/scp/silver
+* openid
+7. Click “Create Rule”
 
 ![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/okta_add_rule.png)
 
-Your authorization server is now set up so that users in the _silver subscribers_ group who request the “http://myapp.com/scp/silver” scope upon authentication will be granted that scope in their access token. In the API gateway, this scope will give them access to the /planets resource.
+Your authorization server is now set up so that users in the _silver subscribers_ group who request the “http://myapp.com/scp/silver” scope upon authentication will be granted that scope in their access token. In the API gateway, this scope will give them access to the `/planets` resource.
 
 The API Center application renders two user authentication/authorization flows: one for a “silver” user (which you’ve just set up) and one for a “gold” user. If you would like to see the flow for a “gold” user (access to `/moons`) then go through the steps above (starting with the creation of another new group) using *gold* as the keyword in the place of *silver*.
 
 Make sure you've added your REDIRECT_URI as a Trusted Origin in your Okta tenant.
+
+You can now update your `.env` file with the values for OKTA_AZ_SERVER_ISSUER, SILVER_USERNAME, SILVER_PASSWORD, GOLD_USERNAME, GOLD_PASSWORD
 
 Update your `.env` and save.

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<LookupCache async="false" continueOnError="false" enabled="true" name="CacheLookup-OktaJwks">
+    <DisplayName>CacheLookup-OktaJwks</DisplayName>
+    <FaultRules/>
+    <Properties/>
+    <CacheKey>
+        <Prefix>oktajwks</Prefix>
+        <KeyFragment>1</KeyFragment>
+    </CacheKey>
+    <CacheResource>cache1</CacheResource>
+    <Scope>Application</Scope>
+    <AssignTo>cached.okta.jwks</AssignTo>
+</LookupCache>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ProxyEndpoint name="default">
+    <Description/>
+    <FaultRules/>
+    <Flows>
+        <Flow name="parse + validate a JWT obtained from Okta">
+            <Description>Parse / Verify a JWT created by Okta</Description>
+            <Request>
+                <Step>
+                    <Condition>request.header.authorization = null</Condition>
+                    <FaultRules/>
+                    <Name>RF-MissingHeader</Name>
+                </Step>
+                <Step>
+                    <FaultRules/>
+                    <Name>EV-JWT</Name>
+                </Step>
+                <Step>
+                    <FaultRules/>
+                    <Name>CacheLookup-OktaJwks</Name>
+                </Step>
+                <Step>
+                    <Condition>cached.okta.jwks = null</Condition>
+                    <FaultRules/>
+                    <Name>SC-RetrieveOktaJwks</Name>
+                </Step>
+                <Step>
+                    <Condition>cached.okta.jwks = null</Condition>
+                    <FaultRules/>
+                    <Name>CacheInsert-OktaJwks</Name>
+                </Step>
+                <Step>
+                    <Condition>cached.okta.jwks = null</Condition>
+                    <FaultRules/>
+                    <Name>AV-OktaJwks</Name>
+                </Step>
+                <Step>
+                    <FaultRules/>
+                    <Name>Verify-JWT-1</Name>
+                </Step>
+                <Step>
+                    <FaultRules/>
+                    <Condition>(proxy.pathsuffix MatchesPath "/planets") and (jwt.Verify-JWT-1.claim.scp !~ "*http://myapp.com/scp/silver*"</Condition>
+                    <Name>RF-MissingRequiredScope</Name>
+                </Step>
+                <Step>
+                    <FaultRules/>
+                    <Condition>(proxy.pathsuffix MatchesPath "/moons") and (jwt.Verify-JWT-1.claim.scp !~ "*http://myapp.com/scp/gold*"</Condition>
+                    <Name>RF-MissingRequiredScope</Name>
+                </Step>
+                <Step>
+                    <FaultRules/>
+                    <Condition>proxy.pathsuffix MatchesPath "/test"</Condition>
+                    <Name>RF-TestTokenOK</Name>
+                </Step>
+            </Request>
+            <Condition>(request.verb = "GET") and 
+                (
+                    (proxy.pathsuffix MatchesPath "/moons") or 
+                    (proxy.pathsuffix MatchesPath "/planets") or 
+                    (proxy.pathsuffix MatchesPath "/test")
+                )
+            </Condition>
+        </Flow>
+        <Flow name="unknown request">
+            <Request>
+                <Step>
+                    <FaultRules/>
+                    <Name>RF-UnknownRequest</Name>
+                </Step>
+            </Request>
+            <Response/>
+        </Flow>
+    </Flows>
+    <PreFlow name="PreFlow">
+        <Request/>
+        <Response/>
+    </PreFlow>
+    <PostFlow name="PostFlow">
+        <Request/>
+        <Response/>
+    </PostFlow>
+    <HTTPProxyConnection>
+        <BasePath>/solar-system</BasePath>
+        <Properties/>
+        <VirtualHost>default</VirtualHost>
+        <VirtualHost>secure</VirtualHost>
+    </HTTPProxyConnection>
+    <RouteRule name="default">
+        <TargetEndpoint>default</TargetEndpoint>
+    </RouteRule>
+</ProxyEndpoint>
