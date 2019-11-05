@@ -12,7 +12,7 @@ var session = require("express-session")
 //*******************************************/
 
 const oktaJwtVerifier = new OktaJwtVerifier({
-	issuer: process.env.OKTA_AZ_SERVER_ISSUER
+	issuer: process.env.ISSUER
 })
 
 module.exports = function (app) {
@@ -50,7 +50,7 @@ module.exports = function (app) {
 
 		var options = {
 			method: 'POST',
-			url: process.env.OKTA_AZ_SERVER_ISSUER + "/v1/token",
+			url: process.env.ISSUER + "/v1/token",
 			qs: {
 				grant_type: 'authorization_code',
 				code: code,
@@ -83,12 +83,12 @@ module.exports = function (app) {
 			response_to_browser.access_token = obj.access_token
 			response_to_browser.id_token = obj.id_token
 
-			oktaJwtVerifier.verifyAccessToken(obj.id_token)
+			oktaJwtVerifier.verifyAccessToken(obj.id_token, process.env.CLIENT_ID)
 			.then(jwt => {
 				response_to_browser.id_token_decoded = jwt.claims
 				console.log(jwt.claims)
 
-				oktaJwtVerifier.verifyAccessToken(obj.access_token)
+				oktaJwtVerifier.verifyAccessToken(obj.access_token, process.env.AUD)
 				.then(jwt => {
 					response_to_browser.access_token_decoded = jwt.claims
 
@@ -117,54 +117,58 @@ module.exports = function (app) {
 
 		console.log("the requested endpoint is: " + endpoint);
 
-		console.log("the gateway is: " + req.body.gateway)
-
 		console.log("the access_token token is: \n" + req.session.access_token + "\n");
 
 		// send the access token to the requested API endpoint
 
-		var url = process.env.PROXY_URI + "/" + req.body.endpoint
+		if (process.env.hasOwnProperty("GATEWAY_URI") && process.env.GATEWAY_URI != "") {
 
-		console.log("sending request to: " + url)
+			var url = process.env.GATEWAY_URI + "/" + req.body.endpoint
 
-		var options = {
-			method: 'GET',
-			url: url,
-			headers: {
-				'cache-control': 'no-cache',
-				authorization: "Bearer " + req.session.access_token,
+			console.log("sending request to: " + url)
 
-				accept: 'application/json',
-				'content-type': 'application/x-www-form-urlencoded'
+			var options = {
+				method: 'GET',
+				url: url,
+				headers: {
+					'cache-control': 'no-cache',
+					authorization: "Bearer " + req.session.access_token,
+
+					accept: 'application/json',
+					'content-type': 'application/x-www-form-urlencoded'
+				}
 			}
+
+			request(options, function (error, response, body) {
+				if (error) throw new Error(error)
+
+				console.log("******\nresponse from API gateway: ")
+				console.log("the status code is: " + response.statusCode)
+
+				console.log("the body is:")
+				console.log(body)
+
+				if (response.statusCode == 403) {
+					res.json({message: 'forbidden'})
+					console.log("the request is forbidden")
+				}
+				else if (response.statusCode == 401) {
+					res.json({ message: 'unauthorized' })
+					console.log("the request is unauthorized")
+				}
+				else {
+					res.json(body)
+				}
+			})
 		}
-
-		request(options, function (error, response, body) {
-			if (error) throw new Error(error)
-
-			console.log("******\nresponse from API gateway: ")
-			console.log("the status code is: " + response.statusCode)
-
-			console.log("the body is:")
-			console.log(body)
-
-			if (response.statusCode == 403) {
-				res.json({message: 'forbidden'})
-				console.log("the request is forbidden")
-			}
-			else if (response.statusCode == 401) {
-				res.json({ message: 'unauthorized' })
-				console.log("the request is unauthorized")
-			}
-			else {
-				res.json(body)
-			}
-		})
+		else {
+			res.json({message: 'gateway_uri not yet defined.'})
+		}
 	})
 
 	function getBasicAuthString() {
 
-		var x = process.env.AUTHN_CLIENT_ID + ":" + process.env.AUTHN_CLIENT_SECRET
+		var x = process.env.CLIENT_ID + ":" + process.env.CLIENT_SECRET
 
 		var y = new Buffer(x).toString('base64')
 

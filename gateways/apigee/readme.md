@@ -2,7 +2,7 @@
 
 These instructions will explain how to set up Okta as an external OAuth authorization server for Apigee. In this architecture, the application will obtain an access token from Okta's authorization server, and pass that access token to Apigee as a bearer token (jwt). Apigee will evaluate the bearer token to determine whether the token is valid, and whether it contains the proper scopes for the requested resource.
 
-It is also possible to set up Okta as an identity provider and instead use Apigee itself as the authorization server. Instructions for setting up that flow are [here](https://github.com/zeekhoo-okta/generator-okta-oidc-apigee).
+It is also possible to set up Okta as (only) an identity provider and instead use Apigee itself as the authorization server. Instructions for setting up that flow are [here](https://github.com/zeekhoo-okta/generator-okta-oidc-apigee).
 
 ## Prerequisites
 - An Okta tenant. If you do not already have an Okta tenant, you can get a free-forever developer edition of Okta [here](https://developer.okta.com).

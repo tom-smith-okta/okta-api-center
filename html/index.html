@@ -31,20 +31,7 @@
 
 	<script>
 
-		var gateway = "{{GATEWAY}}"
-		console.log("the gateway is: " + gateway)
-
-		var silver_username = "{{SILVER_USERNAME}}"
-		var gold_username = "{{GOLD_USERNAME}}"
-
-		var arr
-
-		arr = silver_username.split("@")
-		console.dir(arr)
-		silver_username = arr[0]
-
-		arr = gold_username.split("@")
-		gold_username = arr[0]
+		var gateway_is_tyk = JSON.parse('{{GATEWAY_IS_TYK}}')
 
 		var signIn = new OktaSignIn(
 			{
@@ -70,6 +57,9 @@
 		})
 
 		function log_out() {
+
+			localStorage.clear();
+
 			$.ajax({
 				type: 'POST',
 				url: '/endSession',
@@ -88,10 +78,6 @@
 		}
 
 		window.onload = function() {
-
-			$("#silver_username").html(silver_username)
-			$("#gold_username").html(gold_username)
-			$("#gateway").html(gateway)
 
 			// look for login url in local storage
 			// just for reference
@@ -168,7 +154,7 @@
 
 		$.ajax({
 			type: 'POST',
-			data: JSON.stringify({ "endpoint": endpoint, "gateway": "{{GATEWAY}}" }),
+			data: JSON.stringify({ "endpoint": endpoint }),
 			contentType: 'application/json',
 			url: '/getData',
 			success: function(data) {
@@ -195,13 +181,13 @@
 	}
 
 	function redirectToOkta(level) {
-		var uri = '{{OKTA_AZ_SERVER_ISSUER}}/v1/authorize?response_type=code&client_id={{AUTHN_CLIENT_ID}}&redirect_uri={{REDIRECT_URI}}&response_mode=fragment'
+		var uri = '{{ISSUER}}/v1/authorize?response_type=code&client_id={{CLIENT_ID}}&redirect_uri={{REDIRECT_URI}}&response_mode=fragment'
 
-		uri += '&state=' + gateway
+		uri += '&state=' + getNonce()
 		uri += '&nonce=' + getNonce()
 		uri += '&prompt=login&scope=openid'
 
-		if (gateway === "tyk") {}
+		if (JSON.parse('{{GATEWAY_IS_TYK}}')) {}
 		else {
 			if (level === "silver" || level === "gold") { uri += " http://myapp.com/scp/silver"; };
 
@@ -267,17 +253,13 @@
 					</div>
 					<div class = "panel-body">
 						<div class = "row">
-							<div class = "col-sm-6">
-								<p>silver user: <span id = "silver_username"></span>
-								<br>
-								password: {{SILVER_PASSWORD}}</p>
-							</div>
-							<div class = "col-sm-6" style="text-align: center;">
+							<div style= "text-align: center; padding-top: 5px; padding-bottom: 5px">
 								<button type="button" class="btn btn-default" onclick="redirectToOkta('silver')">authenticate</button>
 							</div>
+
 						</div>
 
-						<span id = "planetsLink">proxy endpoint: <span class = "proxy_uri">{{PROXY_URI}}/planets</span>
+						<span id = "planetsLink">proxy endpoint: <span class = "proxy_uri">{{GATEWAY_URI}}/planets</span>
 
 						<div style= "text-align: center; padding-top: 10px">
 							<button type="button" class="btn btn-info" onclick="getData('planets')">show me the planets!</button>
@@ -298,16 +280,12 @@
 					</div>
 					<div class = "panel-body">
 						<div class = "row">
-							<div class = "col-sm-6">
-								<p>gold user: <span id = "gold_username"></span>
-								<br>
-								password: {{GOLD_PASSWORD}}</p>
-							</div>
-							<div class = "col-sm-6" style="text-align: center;">
+
+							<div style= "text-align: center; padding-top: 5px; padding-bottom: 5px">
 								<button type="button" class="btn btn-warning" onclick="redirectToOkta('gold')">authenticate</button>
 							</div>
 						</div>
-						<span id = "moonsLink">proxy endpoint: <span class = "proxy_uri">{{PROXY_URI}}/moons</span>
+						<span id = "moonsLink">proxy endpoint: <span class = "proxy_uri">{{GATEWAY_URI}}/moons</span>
 
 						<div style= "text-align: center; padding-top: 10px">
 							<button type="button" class="btn btn-info" onclick="getData('moons')">show me some moons!</button>
@@ -326,33 +304,30 @@
 
 			<div class="col-md-6">
 
-				<div id = "okta_server_header">
-					<div class = "panel panel-primary">
-						<div class = "panel-heading"><b>Okta tokens</b></div>
+				<div class = "panel panel-primary">
+					<div class = "panel-heading"><b>The OAuth flow</b></div>
 
-						<div class = "panel-body" id="">
-							<ul>
-							<li>Raw access token and id token are availabile in the console</li>
-							<li>Raw tokens and decoded tokens should stay server-side</li>
-							<li>They are shown here for demo purposes only</li>
-						</div>
+					<div class = "panel-body" id="">
+						<ul>
+						<li>The user is authenticating using the authorization code grant type.</li>
+						<li>After authentication, you can see the authorization code in the address bar, and it's also in the developer console.</li>
+						<li>The access token and id token are availabile in the console. These would not typically be sent to the browser in an authorization code flow, unless you're using PKCE.</li>
+						<li>They are shown here for demo purposes.</li>
 					</div>
 				</div>
 
-				<div id = "access_token_div">
-					<div class = "panel panel-success">
-						<div class = "panel-heading">Access token, decoded:</div>
-						<div class = "panel-body" id="access_token_decoded">[none]</div>
-					</div>
+				<div class = "panel panel-success" id="access_token_div">
+					<div class = "panel-heading">Access token, decoded:</div>
+					<div class = "panel-body" id="access_token_decoded">[none]</div>
 				</div>
 
-				<div id = "id_token_div">
-					<div class = "panel panel-success">
-						<div class = "panel-heading">ID token, decoded:</div>
-						<div class = "panel-body" id="id_token_decoded">[none]</div>
-					</div>
+				<div class = "panel panel-success" id="id_token_div">
+					<div class = "panel-heading">ID token, decoded:</div>
+					<div class = "panel-body" id="id_token_decoded">[none]</div>
 				</div>
+
 			</div>
+		</div>
 	</div>
 
 </div>

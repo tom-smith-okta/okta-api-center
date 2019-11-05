@@ -2,74 +2,37 @@
 
 This integration guide describes how to integrate Okta's API Access Management (OAuth as a Service) with Amazon API Gateway.
 
-## What You'll Build
+The basic flow is that Amazon API Gateway will accept incoming requests and pass them on to a custom Lambda authorizer. The Lambda authorizer (which we will set up) will evaluate the access token included in the request and determine whether the access token is 1) valid and 2) contains the appropriate scopes for the requested resource.
 
-At the end of this setup, you'll have an architecture where:
+We will set up the Lambda authorizer to validate the access tokens against Okta.
 
-1. End-users will be able to authenticate against Okta and receive an access token (via the app)
-2. End-users will have different scopes in their access token, depending on their group assignments
-3. The application will send the access token to the Amazon API Gateway
-4. AWS will check the validity of the access token locally
-5. If the token and scopes are valid, AWS will send the request on to the API
-6. The API will send the data payload to the gateway, which will send it on to the application
+We'll be using a mock "solar system" API that is publicly available, so you don't need to worry about setting up the API itself.
 
-## Prerequisites for integrating Okta + Amazon API Gateway
+## Prerequisites
 
-1. **An Okta account.** If you don't already have one, you can get a free-forever account at [developer.okta.com](https://developer.okta.com/signup/)
-2. **An AWS account.** If you don't already have an AWS account, you can get a free one [here](https://aws.amazon.com/Sign-Up‎).
+### Okta
 
-### Step-by-step
+These instructions follow a prescribed scenario, and assume that you have already completed the setup steps outlined in the `okta_setup` folder of this repo.
+
+As a result of those setup steps, you should have the following values on hand before proceeding:
+
+ISSUER
+	example: https://dev-399486.okta.com/oauth2/default
+	this value will be `{{OKTA_TENANT}}/oauth2/default` unless you've set up a different authorization server in Okta.
+
+### AWS
+
+You will also of course need an AWS account.
+
+### Overview
+
 The high-level process we are going to follow is:
 
 1. Set up your API in Amazon API Gateway
-* key outputs: PROXY_URI / Audience
-2. Set up your Okta tenant
-* key outputs: OKTA_AZ_SERVER_ISSUER
-3. Add a Lambda function to your AWS account to handle authorization (this step includes setting up an IAM role)
-* key outputs: Lambda authorizer
-4. Add the Lambda authorization function to selected resources in your API Gateway
-5. Set up and launch your application
+2. Add a Lambda function to your AWS account to handle authorization (this step includes setting up an IAM role)
+3. Add the Lambda authorization function to selected resources in your API Gateway
 
-If you haven't already done so, clone this repo to your local machine.
-
-In the last step of this integration, we'll launch a sample application that will show the end-to-end flow. This sample application requires a few settings - environment variables - to launch. To manage these environment variables, the application uses the [dotenv npm package](https://www.npmjs.com/package/dotenv). There is an example .env file in the repo called `.env_example`. Copy the `.env_example` file now to a file called `.env`.
-
-This is what the .env_example file looks like:
-
-```
-# Okta settings
-
-# example: https://dev-511902.oktapreview.com
-OKTA_TENANT=""
-
-OKTA_API_TOKEN=""
-AUTHN_CLIENT_ID=""
-AUTHN_CLIENT_SECRET=""
-
-# example: https://dev-511902.oktapreview.com/oauth2/ausfqw42xrkmpfDHI0h7
-OKTA_AZ_SERVER_ISSUER=""
-
-# Gateway/Proxy base url
-# example: http://52.14.100.89:8080/solar-system
-PROXY_URI=""
-
-# App settings
-PORT="8080"
-REDIRECT_URI="http://localhost:8080"
-SILVER_USERNAME=""
-SILVER_PASSWORD=""
-GOLD_USERNAME=""
-GOLD_PASSWORD=""
-SESSION_SECRET="some random phrase"
-SESSION_MAX_AGE=60000
-
-# Supported values: aws, kong, mulesoft, swag, tyk
-GATEWAY=""
-```
-
-There are a couple of values you should fill in now, such as `OKTA_TENANT` and `GATEWAY`. I will point out when we generate the other values along the way; you can either enter them in your `.env` file as you go, or do it all at the end. There is a helper script that will gather the settings for you at the end.
-
-## Configure Amazon API Gateway
+## Set up your API in Amazon API Gateway
 
 In your AWS Management Console, go to API Gateway.
 
@@ -132,9 +95,7 @@ Click the Invoke URL, and you should arrive at a simple page with the text "Okta
 
 ![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/amazon_api_gateway/aws_api_gateway_solar-system_home.png)
 
-This Invoke URL is important; we're going to use it as the PROXY_URI for our sample application, and also as the Audience value for our Authorization Server.
-
-Add it to your `.env` file now as your PROXY_URI.
+This Invoke URL is important; we're going to use it as the GATEWAY_URI for our sample application, and also as the Audience value for our Authorization Server.
 
 Now, let's add a couple of "real" endpoints to the proxy.
 
@@ -180,88 +141,14 @@ and
 
 If you would like to add the `/moons` endpoint, go ahead and do that now, using the same steps you did for `/planets`. The `/moons` endpoint is not required, but it helps to show how different users can have access to different resources. We'll assign the different scopes required to access these endpoints when we set up our Lambda authorization function later.
 
-## Set up your Okta tenant
-
-To properly demonstrate OAuth as a Service, you need a number of elements in your Okta tenant: a client, users, groups, an authorization server, scopes, policies, and rules. And, you need to establish the proper relationships among them.
-
-You have a couple of options to set these up:
-
-* You can use the Okta bootstrap tool. The Okta bootstrap tool is a "labs" type project. It is the fastest and easiest way to get your tenant set up. Instructions are [here](../../okta_setup/okta_setup_bootstrap.md).
-* You can set up your Okta tenant "manually", with Okta's easy-to-use admin UI. Instructions are available [here](../../okta_setup/okta_setup_manual.md).
-
-Go ahead and set up your Okta tenant, then come back to these instructions.
-
 ## Set up the Lambda authorizer
 
 Amazon API Gateway uses a Lambda function to inspect access tokens. So, we need to set up a Lambda function as an authorizer for this API.
 
-To set up the Lambda authorization function, we're going to need a couple of settings from our Okta objects.
+Follow the instructions [here](https://github.com/tom-smith-okta/node-lambda-oauth2-jwt-authorizer) to set up the Lambda authorizer.
 
-If you used the bootstrap tool for setup, run a helper script to extract the relevant settings:
+> Stop when you get to the *Testing* section, and come back to this document.
 
-```bash
-node get_settings.js --aws
-```
-
-This will give you the ISSUER and AUDIENCE values that you need in setting up your Lambda function.
-
-You will also need your JSON web key set (JWKS).
-
-Your JWKS can be retrieved from your `jwks_uri`, and your `jwks_uri` can be obtained from the well-known endpoint of your Authorization Server:
-
-{{ISSUER}}/.well-known/openid-configuration
-
-Now we can get started with creating the Lambda authorizer.
-
-Clone the github repo for the Lambda authorizer:
-
-`git clone https://github.com/mcguinness/node-lambda-oauth2-jwt-authorizer.git`
-
-and install it
-
-`npm install`
-
-For the most part, you can just follow the instructions in the `readme` of that repo to set up the authorizer, with the following adjustments:
-
-* In the *Scopes* section, we're going to use our own scopes (see below)
-
-* Stop when you get to the *Testing* section, and come back to this document.
-
-* In the index.js file, replace the existing policies
-
-```
-if (claims.hasScopes('api:read')) {
-
-	policy.allowMethod(AuthPolicy.HttpVerb.GET, "*");
-
-} else if (claims.hasScopes('api:write')) {
-
-	policy.allowMethod(AuthPolicy.HttpVerb.POST, "*");
-
-	policy.allowMethod(AuthPolicy.HttpVerb.PUT, "*");
-
-	policy.allowMethod(AuthPolicy.HttpVerb.PATCH, "*");
-
-	policy.allowMethod(AuthPolicy.HttpVerb.DELETE, "*");
-
-}
-
-```
-with these policies:
-```
-if (claims.hasScopes('http://myapp.com/scp/silver')) {
-
-	policy.allowMethod(AuthPolicy.HttpVerb.GET, "/planets");
-
-}
-
-if (claims.hasScopes('http://myapp.com/scp/gold')) {
-
-	policy.allowMethod(AuthPolicy.HttpVerb.GET, "/moons");
-
-}
-
-```
 Now that you have set up your authorizer, we can add it to the `/planets` method we created earlier.
 
 ## Add the Lambda Authorizer to API Resources
@@ -318,3 +205,16 @@ Next, try authenticating as one of the users. You'll get an id token and an acce
 Now that the user has a token (actually the token is sitting on the server), you can click on one of the "show me" buttons again to see if you get the requested resource.
 
 Enjoy the solar system!
+
+----------------------------------------
+
+## What You'll Build
+
+At the end of this setup, you'll have an architecture where:
+
+1. End-users will be able to authenticate against Okta and receive an access token (via the app)
+2. End-users will have different scopes in their access token, depending on their group assignments
+3. The application will send the access token to the Amazon API Gateway
+4. AWS will check the validity of the access token locally
+5. If the token and scopes are valid, AWS will send the request on to the API
+6. The API will send the data payload to the gateway, which will send it on to the application
