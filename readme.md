@@ -34,7 +34,7 @@ Okta is a standards-compliant OAuth 2.0 authorization server and a certified Ope
 The overall setup has the following components:
 
 1. Set up your Okta tenant
-2. Set up the application (and test it)
+2. Set up the sample application (and test it)
 3. Set up your API (a mock API is available) and API Gateway
 4. Test the application -> API gateway connection
 
@@ -54,7 +54,7 @@ And, of course, a use-case to drive the configuration of all of those components
 This setup uses a simple use-case to illustrate how the overall flow works:
 
 * You are managing a "solar system" API and a viewing application.
-* You want to control access to the API so that only users with a silver-level subscription (scope) get access to a list of the planets, and only users with a gold-level subscription (scope) get access to a list of the moons.
+* You want to control access to the API so that only users with a silver-level subscription (scope) get access to a list of the planets, and only users with a gold-level subscription (scope) get access to a (partial) list of the moons.
 
 With that use-case as context, the detailed setup instructions follow.
 
@@ -70,6 +70,11 @@ After you've set up your Okta tenant, come back here and move on to testing your
 ### Set up the test application
 
 The test application allows your end-users to authenticate against Okta and get an access token, which the application will then send to your chosen API Gateway.
+
+If you've used the Terraform tool to set up your Okta tenant, there are just a couple of adjustments that need to be made to your tenant "manually":
+
+* go into your Okta tenant and set passwords (or send activation emails) for the two new users that were created: carl.sagan and jodie.foster.
+* nice to have: add the domain of your redirect_uri as a [trusted origin](https://developer.okta.com/docs/guides/enable-cors/overview/#granting-cross-origin-access-to-websites)
 
 ### Prerequisites
 
@@ -103,7 +108,7 @@ Copy the `.env_example` file to a file called
 
 `.env`
 
-Open the `.env` file and update the settings for your environment. If you've followed all of the instructions so far and accepted all of the defaults (or if you've used the terraform interface), then you'll only need to update the following values:
+Open the `.env` file and update the settings for your environment. If you've followed all of the instructions so far and accepted all of the defaults (or if you've used the Terraform interface), then you'll only need to update the following values:
 
 OKTA_TENANT
 ISSUER
@@ -111,6 +116,10 @@ CLIENT_ID
 CLIENT_SECRET
 
 If you're using Tyk as your gateway, change GATEWAY_IS_TYK to `true`.
+
+There is a sample value for `GATEWAY_URI` that you can ignore for now; you'll update that after you set up your API Gateway.
+
+Save the `.env` file.
 
 #### Launch and test the application
 
