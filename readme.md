@@ -1,5 +1,12 @@
 # Okta API Center
 
+TL;DR:
+1. use the [Terraform tool](https://okta-terraform.herokuapp.com) to set up your Okta tenant automatically with all of the objects that you need to generate access tokens with scopes
+2. use the sample application `app.js` to enable sample users to get access tokens (with scopes) from Okta
+3. set up your API Gateway to validate access tokens issued by Okta
+
+## Overview
+
 The Okta API Center gives developers tools to see how easily Okta's API Access Management (OAuth as a Service) capabilities integrate with leading API gateways and application proxies.
 
 If you want to see what these flows can look like from an end-user perspective, you can check out the [public demo site](https://okta-api-am.herokuapp.com).
@@ -138,6 +145,8 @@ Similarly, if you click the authenticate button in the "gold access" box and aut
 The "raw" access token is available in the developer console if you want to inspect it.
 
 > Note: if you authenticate as carl.sagan when you click on the authenticate button in the "gold access" box, you will successfully authenticate (get an Okta session) but you will not get an access token because the requested scopes do not line up with the policy you've set up in the authorization server.
+
+> Note: if you've followed the default Okta setup instructions, or used the Terraform setup tool, your default access policy will still be active in your tenant. The default access policy actually allows any user to be granted any scope (as long as the scope is requested in the authorization request). If you want to see if the authorization policies are "really" working, then just make the default policy for the authorization server inactive.
 
 If you click on the "show me" links now, they won't work, because we haven't set up the gateway_uri in our app yet. That's the next step.
 
