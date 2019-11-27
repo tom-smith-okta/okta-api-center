@@ -154,12 +154,12 @@ If you click on the "show me" links now, they won't work, because we haven't set
 
 Each API Gateway accommodates external OAuth providers slightly differently. Follow the instructions in the 'gateways' folder of this repo for the gateway that you are using. Instructions are available for the following gateways:
 
-* apigee
-* amazon API gateway
-* kong
-* mulesoft
-* software AG
-* tyk
+* Apigee
+* Amazon API gateway
+* Kong
+* Mulesoft
+* Software AG
+* Tyk
 
 Please note that I have provided a very simple solar system API here: https://okta-api-am.herokuapp.com
 This API echoes a list (json object) of the planets: https://okta-api-am.herokuapp.com/planets

@@ -12,7 +12,7 @@ We'll be using a mock "solar system" API that is publicly available, so you don'
 
 ### Okta
 
-These instructions follow a prescribed scenario, and assume that you have already completed the setup steps outlined in the `okta_setup` folder of this repo.
+These instructions assume that you have already set up your Okta tenant and can acquire access tokens from Okta by following the instructions in the [main readme of this repo](readme.md).
 
 As a result of those setup steps, you should have the following values on hand before proceeding:
 
@@ -73,7 +73,7 @@ Your GET request should now look like this:
 
 ![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/amazon_api_gateway/aws_api_gateway_get_method_execution.png)
 
-At this point, test the gateway to ensure that it's properly proxying requests.
+At this point, test the gateway to ensure that it's properly proxying requests:
 
 Click the **Actions** button, then *Deploy API*.
 
@@ -95,7 +95,7 @@ Click the Invoke URL, and you should arrive at a simple page with the text "Okta
 
 ![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/amazon_api_gateway/aws_api_gateway_solar-system_home.png)
 
-This Invoke URL is important; we're going to use it as the GATEWAY_URI for our sample application, and also as the Audience value for our Authorization Server.
+This Invoke URL is important; we're going to use it as the GATEWAY_URI for our sample application.
 
 Now, let's add a couple of "real" endpoints to the proxy.
 
@@ -139,7 +139,7 @@ The sample application will test two endpoints:
 and
 `/moons`
 
-If you would like to add the `/moons` endpoint, go ahead and do that now, using the same steps you did for `/planets`. The `/moons` endpoint is not required, but it helps to show how different users can have access to different resources. We'll assign the different scopes required to access these endpoints when we set up our Lambda authorization function later.
+If you would like to add the `/moons` endpoint, go ahead and do that now, using the same steps you did for `/planets`. The `/moons` endpoint is not required, but it helps to show how different users can have access to different resources. We'll assign the different scopes required to access these endpoints when we set up the Lambda authorization function.
 
 ## Set up the Lambda authorizer
 
@@ -171,50 +171,12 @@ Now that we've added authorization to one of our resources, we can deploy the AP
 
 Click the **Actions** button, then *Deploy API*.
 
-Make sure you keep the *Stage* name the same as in the initial  setup, because that's now the AUDIENCE value for the Authorization server.
-
 Click **Deploy**.
 
 If you click on the *Invoke URL* as-is, then you will again arrive at the home for the solar system API.
 
 If you append */planets* to the Invoke URL, you will get an *Unauthorized* message. This means that our authorizer is doing its job and blocking attempts to reach the `/planets` resource without a valid access token.
 
-## Get the app settings
+## Testing
 
-If you used the bootstrap tool for setup, and you haven't run the helper script yet to extract the relevant settings, go ahead and run it now:
-
-```bash
-node get_settings.js --aws
-```
-
-The script will display the settings on the screen, and also save them to an output file so that you can refer to them later if you need to.
-
-Take these settings and update your `.env` file with any values that still need to be added.
->Note: you don't need to copy every setting from the output, but it's no harm if you do
-
-You can now launch your app:
-
-```bash
-node app.js
-```
-
-When you load the web app, first try clicking on the "show me the planets" and/or the "show me the moons" buttons. You'll get an error notifying you that you need an access token.
-
-Next, try authenticating as one of the users. You'll get an id token and an access token displayed in the browser (in a production environment, you would not do this). The raw tokens are also available in the console if you want to check them out.
-
-Now that the user has a token (actually the token is sitting on the server), you can click on one of the "show me" buttons again to see if you get the requested resource.
-
-Enjoy the solar system!
-
-----------------------------------------
-
-## What You'll Build
-
-At the end of this setup, you'll have an architecture where:
-
-1. End-users will be able to authenticate against Okta and receive an access token (via the app)
-2. End-users will have different scopes in their access token, depending on their group assignments
-3. The application will send the access token to the Amazon API Gateway
-4. AWS will check the validity of the access token locally
-5. If the token and scopes are valid, AWS will send the request on to the API
-6. The API will send the data payload to the gateway, which will send it on to the application
+Now that you have set up Amazon API Gateway as an API proxy, you can test out the whole flow. Take note of the Invoke URL, jump back to the main `readme` in this repo, and go to the `Test your application and access tokens` section.

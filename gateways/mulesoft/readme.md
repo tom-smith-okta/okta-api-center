@@ -2,122 +2,12 @@
 
 If you're building or managing an API, you're probably using an API gateway to help you manage it. Hopefully, you're also using OAuth and an identity provider (IdP) like [Okta](https://developer.okta.com/) to secure your API through the gateway. Maybe you've also discovered that getting the "OAuth dance" working properly among the gateway, IdP, and application can be tricky.
 
-I've worked with a lot of different API gateways and want to provide some guidance and tools to help you get a reference architecture up and running between an authorization server and your API gateways. I'll start with Mulesoft, but will add more gateways on a regular basis. This sample workflow will give you a working example that you can modify to suit your own use-case.
-
-If you want to skip ahead, you can see sample workflow in action here:
-
-https://youtu.be/n8r-9Gpoods
+If you want to see what the whole flow looks like end-to-end, you can see a sample workflow in action [here](https://youtu.be/n8r-9Gpoods).
 
 ## Prerequisites for this integration
 
-1. **An Okta account.** If you don't already have one, you can get a free-forever account at [developer.okta.com](https://developer.okta.com/signup/)
-2. **An Okta API Token.** Once you've activated your Okta tenant, you can follow the instructions [here](https://developer.okta.com/docs/api/getting_started/getting_a_token) to get an API token.
-3. **An API Gateway.** If you don't already have a Mulesoft Anypoint account, you can get a free 30-day trial version [here](https://anypoint.mulesoft.com/login/#/signup).
-
-## What You'll Build
-
-At the end of this setup, you'll have an architecture where:
-
-1. Users will be able to authenticate against Okta and receive an access token (via the app)
-2. Users will have different scopes in their access token, depending on their group assignments. The application will send the access token to the API gateway
-4. The API gateway will check the validity of the access token - including scopes - against Okta
-5. If the token and scopes are valid, the gateway will send the request on to the API
-6. The API will send the data payload to the gateway, which will send it on to the application
-
-### Step-by-step
-The high-level process we are going to follow is:
-
-1. Set up your Okta tenant
-2. Set up your API in Mulesoft
-3. Create an Okta developer client via the Mulesoft UI
-3. Set up and launch your application
-
-In the last step, we'll launch the sample application that will show the end-to-end flow. This sample application requires a few settings - environment variables - to launch. To manage these environment variables, the application uses the [dotenv npm package](https://www.npmjs.com/package/dotenv). There is an example .env file in the repo called `.env_example`. Copy the `.env_example` file now to a file called `.env`.
-
-This is what the .env_example file looks like:
-
-```
-# Okta settings
-
-# example: https://dev-511902.oktapreview.com
-OKTA_TENANT=""
-
-OKTA_API_TOKEN=""
-AUTHN_CLIENT_ID=""
-AUTHN_CLIENT_SECRET=""
-
-# example: https://dev-511902.oktapreview.com/oauth2/ausfqw42xrkmpfDHI0h7
-OKTA_AZ_SERVER_ISSUER=""
-
-# Gateway/Proxy base url
-# example: http://52.14.100.89:8080/solar-system
-PROXY_URI=""
-
-# App settings
-PORT="8080"
-REDIRECT_URI="http://localhost:8080"
-SILVER_USERNAME=""
-SILVER_PASSWORD=""
-GOLD_USERNAME=""
-GOLD_PASSWORD=""
-SESSION_SECRET="some random phrase"
-SESSION_MAX_AGE=60000
-
-# Supported values: aws, kong, mulesoft, swag, tyk
-GATEWAY=""
-```
-
-There are a couple of values you should fill in now, such as `OKTA_TENANT` and `GATEWAY`. I will point out when we generate the other values along the way; you can either enter them in your `.env` file as you go, or do it all at the end. There is also a helper script that will gather the settings for you at the end.
-
-## Configure your Okta Account
-
-To properly demonstrate OAuth as a Service, you need a number of elements in your Okta tenant: users, groups, an authorization server, scopes, policies, and rules. You have a couple of options to set these up:
-
-* You can use the Okta bootstrap tool. That’s what I’m going to assume for the rest of these instructions.
-* You can set up your Okta tenant "manually", with Okta's easy-to-use admin UI. Instructions are available at the end of this article.
-
-To set up your Okta tenant with all of the components needed for this example, such as users, groups, authorization servers, etc., we'll run a couple bootstrap scripts.
-
-The first bootstrap script will configure a number of objects in your Okta tenant. The objects we need right away are an authorization server and an introspection client so that we can set up Okta as an external identity provider in Mulesoft.
-
-Make sure you've added your `OKTA_API_TOKEN` to your `.env` file.
-
-Also, make sure you're OK with the default values for REDIRECT_URI and PORT. You can change these values in the .env file if you need to.
-
-```bash
-node okta_bootstrap.js --mulesoft
-```
-
-The Okta bootstrap tool will find an input file, which contains the inputs required for initial setup.
-
-```bash
-node okta_bootstrap --mulesoft
-
-Found a valid input file at ./okta_bootstrap/input/mulesoft.json
-sending a request to Okta to test the api token...
-the token works
-
-now, reviewing all values...
-
-looking for TAG...
-cannot find a final value for TAG yet
-calculating/retrieving default value...
-this is a generated value...
-'autogen20180625-1247'
-Do you want to:
-(C) continue with this value
-(p) provide a new value
-(a) auto-accept and generate all remaining values
-(q) quit
-```
-
-To just accept all default values automatically, enter `a`
-
-Or, you can press C (or enter) to continue. In this case the bootstrap tool iterates through the values in the input file, pausing to ask if you want to accept each value. You can enter "a" to accept all remaining values without pausing.
-
-We now have values that we can enter into Mulesoft Anypoint to set up Okta as an identity provider.
-
-We'll use a tool to pull out these settings from the bootstrap output file in a moment.
+1. **An Okta tenant.** These instructions assume that you have already set up your Okta tenant and can acquire access tokens from Okta by following the instructions in the [main readme of this repo](readme.md).
+2. **An API Gateway.** If you don't already have a Mulesoft Anypoint account, you can get a free 30-day trial version [here](https://anypoint.mulesoft.com/login/#/signup).
 
 ## Configure your Mulesoft Account
 In your Mulesoft Anypoint tenant, go to:
@@ -131,13 +21,17 @@ Click on "advanced settings" to expose the Authorization Header field.
 
 ![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_dynamic_client_registration.png)
 
-You can retrieve the values needed for this screen with the following command:
+The `Client Registration URL` is: {{OKTA_TENANT}}/oauth2/v1/clients
 
-```bash
-node get_settings --mulesoft_introspect
-```
+The `Authorization Header` is: SSWS {{OKTA_API_KEY}}
 
-Paste the values into the form. Note: For the *authorization header* field, use this value: `SSWS OKTA_API_TOKEN` and replace `OKTA_API_TOKEN` with your actual token.
+You can use the client ID and client secret that you set up during your Okta set-up as the Client ID and Client Secret for the Token Introspection Client.
+
+The Authorize URL, Token URL, and Token Introspection URL are all available from your Okta authorization server settings.
+
+If you are using the default settings, these URLs will look something like this:
+
+https://partnerpoc.oktapreview.com/oauth2/default/v1/token
 
 Click **Save**.
 
@@ -258,7 +152,7 @@ You will now see the *Request API access* screen:
 
 Click *Create a new application* and enter the following values when prompted:
 
-Name: Solar System Auth
+Name: Solar System Authn
 OAuth 2.0 Grant type: Authorization Code Grant
 OAuth 2.0 redirect URIs: http://localhost:8080 (or whatever REDIRECT_URI you established at the beginning of the process).
 
@@ -274,169 +168,16 @@ You will see an "API Access has been successful!" message.
 
 ![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_api_access_successful.png)
 
-Add the `Client ID` and `Client secret` to your `.env` file (in the `AUTHN_CLIENT_ID` and `AUTHN_CLIENT_SECRET` fields).
-
-And, while you have the `.env` file open, copy your Mulesoft Cloudhub url to the `PROXY_URI` field. (You can find your Cloudhub URL - listed as Proxy URL - on your API settings home page if you didn't save it earlier). If your Proxy URL does not begin with http:// (or https://), make sure you add http:// (or https://) to the beginning of the URL when you paste it into your `.env` file.
-
-## Configure your Okta Account (Part 2)
-
-Now that we have our authentication client_id and secret, we can set up our policies and rules in the Okta tenant. To do so, run the following bootstrap script:
-
-```bash
-node okta_bootstrap.js --mulesoft_policy
-```
-
-Two steps need to be done manually in your Okta tenant before launching your app.
-
-1) Add your `REDIRECT_URI` as a Trusted Origin in your Okta tenant:
-
-Go to API->Trusted Origins->Add Origin (if you are using the classic UI, go to Security->API->Trusted Origins->Add Origin).
-
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/okta_trusted_origin.png)
-
-2) Assign the Okta client (`AUTHN_CLIENT_ID`) that you created via the Mulesoft UI to Okta users/groups
-
-For the purposes of this demo, we're going to assign this client to the Everyone group, but in a production environment, you would assign it to only the groups that need to use it.
-
-In your Okta tenant, go to Applications, find your Solar System Auth app, and click the Assignments tab.
-
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/okta_assign_group.png)
-
-Click the **Assign** button and then select *Assign to Groups*
-
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/okta_everyone_group.png)
-
-Click the **Assign** button next to the Everyone group, then click **Done**.
-
-## Launch the Node Application
-
-If you've been using the Okta bootstrap tool, run a script to gather the settings that the app will need:
-
-```bash
-node get_settings.js --mulesoft
-```
-
-Use these settings to update your `.env` file.
-
-You can now launch your app:
-
-```bash
-node app.js
-```
-
-When you load the web app, first try clicking on the "show me the planets" and/or the "show me the moons" buttons. You'll get an error notifying you that you need an access token.
-
-Next, try authenticating as one of the users. You'll get an id token and an access token displayed in the browser (you would not do this in prod). The raw tokens are also available in the console if you want to check them out.
-
-Now that the user has a token (actually the token is sitting on the server), you can click on one of the "show me" buttons again to see if you get the requested resource.
-
 ## Wrapping up
 
-Hopefully you've found this walk-through helpful. As I mentioned at the start, the OAuth dance among the application, IDP, and API gateway can be tricky. Now that you have a basic working flow, you can experiment with other scopes, clients, groups, etc. to fit your own use-cases.
+You're now almost ready to test the end-to-end flow with the sample app. Before jumping back to the instructions for the sample application, there are just a couple of things to take care of:
 
-Enjoy the planets!
+* In that last step, you created a new client in Okta via the Mulesoft UI, which, again, is pretty cool.
+-- Go to your Okta tenant, find that new client, and assign it to the Everyone group - or at least to the sample users for this app.
+-- update the CLIENT_ID and CLIENT_SECRET values in the `.env` file with the client_id and client_secret from the client that you just created via the Mulesoft UI.
 
-## Further Reading
-If you want to learn more about OAuth or using Okta with Node.js, you may find these articles interesting:
+* the Mulesoft Cloudbhub URL - this will be the "GATEWAY_URI" value
 
-* What is the OAuth 2.0 Authorization Code Grant Type?
-* Build Secure Node Authentication with Passport.js and OpenID Connect
-* What the Heck is OAuth?
-* Tutorial: Build a Basic CRUD app with Node.js
-Head over to Okta’s OIDC/OAuth 2.0 API for more detailed information on how we support OAuth. 
-As always, you can follow us on Twitter @oktadev for more content or drop a question in the comments below!
+## Testing
 
-----------------
-
-Instructions for those not using the bootstrap tool:
-
-These instructions assume that you are using the Developer Edition of Okta. If you are using the Enterprise version, some of the screen captures and menus may look a little different.
-
-Also, we’re going to use the default authorization server that is built in to the developer edition. If you are using an Enterprise edition of Okta, you will need to set up an authorization server.
-
-1. Set up an introspection client: Mulesoft uses a dedicated client to introspect all tokens.
-
-Click “Applications” and then “Add application”.
-
-Choose “Service”, then Next.
-
-Name: Token Introspection Client
-
-Click Done.
-
-You’ll get a client id and client secret. Set these aside for Token Introspection.
-
-2. Get your OpenID Connect Authorization URLs
-
-Click API->Authorization Servers
-
-Click default
-
-Click on the Metadata URI
-
-Leave this page open
-
-3. Follow the steps outlined in “Mulesoft tenant: set up Okta as an External Identity Provider”
-
-Client Registration URL = Metadata->registration_endpoint
-Authorization Header = SSWS OKTA_API_TOKEN
-Client ID = token introspection client
-Client Secret = token introspection secret
-Authorize URL = Metadata->authorization_endpoint
-Token URL = Metadata->token_endpoint
-Token Inspection URL = Metadata->introspection_endpoint
-
-4. Finish the Mulesoft set-up:
-Mulesoft tenant: set up and deploy your API
-Mulesoft tenant: set access policies on your API
-Mulesoft tenant: set up an authentication client
-
-At the end of the “set up an authentication client” step, you’ll have a client_id and client_secret to use as your authentication client id and secret.
-
-5. Setting up your Okta tenant
-
-* Set up a group: Users->Groups->Add Group
-   * Name the group “silver subscribers”; you can use the same for the description
-   * Click Add Group
-* Add a user: Users->People->Add Person
-   * In the Groups field, add “silver subscribers”
-   * Use whatever values you wish for the remaining fields
-   * Click Save
-* Add a scope: API->Authorization Servers->default
-   * Click the Scopes tab
-   * Click Add Scope
-      * Name: http://myapp.com/scp/silver
-      * Description: Silver scope
-      * Click Create
-* Add a policy
-   * Click the Access Policies tab
-   * Click Add New Access Policy
-      * Name: Solar system API access
-      * Description: Solar system API access
-      * It’s OK to leave it assigned to All clients
-      * Click Create
-* Add a rule
-   * Click the Add rule button
-      * Rule Name: silver access to planets
-      * Change the User clause to “Assigned the app and a member of the following:”
-         * Add the silver subscribers group
-      * Change the Scopes clause to “The following scopes:”
-         * Add these scopes:
-            * http://myapp.com/scp/silver
-            * openid
-      * Click “Create Rule”
-
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/okta_add_rule.png)
-
-Your authorization server is now set up so that users in the silver subscribers group who request the “http://myapp.com/scp/silver” scope upon authentication will be granted that scope in their access token. In the API gateway, this scope will give them access to the /planets resource.
-
-The API Center application renders two user authentication/authorization flows: one for a “silver” user (which you’ve just set up) and one for a “gold” user. If you would like to see the flow for a “gold” user (access to /moons) then go through the steps above (starting with the creation of another new group) using “gold” as the keyword in the place of “silver”.
-
-6. Follow the steps above to add your REDIRECT_URI as a Trusted Origin in your Okta tenant
-7. Follow the steps above to assign the authentication client (created via Mulesoft UI) to Everyone.
-8. Update the values in `.env` and save.
-9. Launch the web app!
-
-```bash
-node app.js
-```
+Now that you have set up Mulesoft as an API proxy, you can test out the whole flow. Take note of the Invoke URL, jump back to the main `readme` in this repo, and go to the `Test your application and access tokens` section.

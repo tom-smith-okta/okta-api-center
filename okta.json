@@ -1,0 +1,10 @@
+﻿{
+  "name": "Okta API Center",
+  "description": "Tools and docs to integrate Okta with API Gateways",
+  "url": "https://okta-api-am.herokuapp.com",
+  "categories": [
+    "authentication",
+    "authorization",
+    "api-authentication"
+  ]
+}
