@@ -51,7 +51,7 @@ At the end of this setup, you'll have an architecture where:
 ## Prerequisites for integrating Okta + Tyk
 
 1. **An Okta account.** If you don't already have one, you can get a free-forever account at [developer.okta.com](https://developer.okta.com/signup/)
-2. **Tyk** If you don't already have a Tyk tenant set up, you can create a forever free developer account on Tyk SaaS [here](https://tyk.io/docs/get-started/‎) or use [docker-compose to launch an on-prem stack](https://github.com/TykTechnologies/tyk-pro-docker-demo). For these instructions, we're going to assume you're using Tyk On-Premises.
+2. **Tyk** If you don't already have a Tyk tenant set up, you can create a forever free developer account on Tyk SaaS [here](https://tyk.io/api-gateway/saas/‎) or use [docker-compose to launch an on-prem stack](https://github.com/TykTechnologies/tyk-pro-docker-demo).
 
 ### Step-by-step
 The high-level process we are going to follow is:
