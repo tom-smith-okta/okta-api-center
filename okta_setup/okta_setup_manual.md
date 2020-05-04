@@ -119,7 +119,12 @@ Add rules to your policy.
 	| &nbsp;			| Groups: silver subscribers
 	| Scopes requested: | Select "The following scopes:" |
 	| &nbsp; 			| Click "OIDC default scopes" to populate the OIDC default scopes |
-	| &nbsp; 			| Then add following scopes: "http://myapp.com/scp/silver" |
+	| &nbsp; 			| Then add the following scopes: "http://myapp.com/scp/silver" |
+
+Your screen should look like this:
+
+![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/silver_auth_rule.png)
+
 2. Click Create Rule
 
 Now the gold access rule. Note that we are adding both silver *and* gold scopes to the gold subscribers group.
