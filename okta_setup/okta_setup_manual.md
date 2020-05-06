@@ -38,7 +38,7 @@ client_secret
 
 Create one group that will contain silver-level subscribers, and another group that will contain gold-level subscribers.
 
-1. Set up a group: Users->Groups->Add Group
+1. Set up a group: Directory->Groups->Add Group
 2. Name the group “silver subscribers”; you can use the same for the description
 3. Click Add Group
 
