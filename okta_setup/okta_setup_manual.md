@@ -72,6 +72,17 @@ Create one user who is a member of the silver subscribers group, and another use
 | Groups: | gold subscribers |
 | Password: | you can choose to either set the user's password now (set by admin) or send the user an activation email. The activation email will go to both the primary and secondary email addresses. |
 
+### Add a CORS Trusted Origin
+
+You need to add a CORS Trusted Origin for http://localhost:8080 if you don't already have one. 
+
+1. Security->API
+2. Click Trusted Origins
+3. Click Add Origin
+4. On the Add Origin Screen, give a name such as "Solar" and add http://localhost:8080 as the Origin URL
+5. Check the boxes for CORS and Redirect
+6. Click Save
+
 ### Add Custom Scopes
 
 Create custom scopes in your authorization server to represent "gold" privileges and "silver" privileges.
@@ -119,12 +130,7 @@ Add rules to your policy.
 	| &nbsp;			| Groups: silver subscribers
 	| Scopes requested: | Select "The following scopes:" |
 	| &nbsp; 			| Click "OIDC default scopes" to populate the OIDC default scopes |
-	| &nbsp; 			| Then add the following scopes: "http://myapp.com/scp/silver" |
-
-Your screen should look like this:
-
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/silver_auth_rule.png)
-
+	| &nbsp; 			| Then add following scopes: "http://myapp.com/scp/silver" |
 2. Click Create Rule
 
 Now the gold access rule. Note that we are adding both silver *and* gold scopes to the gold subscribers group.
