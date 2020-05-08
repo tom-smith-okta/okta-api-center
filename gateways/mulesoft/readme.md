@@ -44,6 +44,8 @@ Click on the Client provider pull-down item and select your client provider
 
 Click Update
 
+Repeat these steps to add your client provider to the Sandbox environment
+
 ![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_edit_environment.png)
 
 Repeat these steps to add your client provider to the Sandox environment
