@@ -10,16 +10,13 @@ If you want to see what the whole flow looks like end-to-end, you can see a samp
 2. **An API Gateway.** If you don't already have a Mulesoft Anypoint account, you can get a free 30-day trial version [here](https://anypoint.mulesoft.com/login/#/signup).
 
 ## Configure your Mulesoft Account
-In your Mulesoft Anypoint tenant, go to:
-Management Center->Access Management->External Identity->Client Management->OpenID Connect Dynamic Client Registration
+In your Mulesoft Anypoint tenant, click on the three small bars in the top left corner and go to Access Management (Below Management Center)
+click Client Providers
+click Add Client Provider -> OpenID Connect Dynamic Client Registration
+g
+![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/new_mulesoft_external_identity.png)
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_external_identity.png)
-
-Click on "advanced settings" to expose the Authorization Header field.
-
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_advanced_settings.png)
-
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_dynamic_client_registration.png)
+![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/new_mulesoft_dynamic_client_registration.png)
 
 The `Client Registration URL` is: {{OKTA_TENANT}}/oauth2/v1/clients
 
@@ -33,23 +30,43 @@ If you are using the default settings, these URLs will look something like this:
 
 https://partnerpoc.oktapreview.com/oauth2/default/v1/token
 
-Click **Save**.
+Click **Create**.
 
 Keep the values for `AUTHORIZE_URL` and `TOKEN_URL` handy, because you will need them in a moment.
 
+## Add client provider to Environments
+
+In your Mulesoft Anypoint tenant, in the Access Management menu, click Environments
+
+Click on the Design environment
+
+Click on the Client provider pull-down item and select your client provider
+
+Click Update
+
+Repeat these steps to add your client provider to the Sandbox environment
+
+![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_edit_environment.png)
+
+Repeat these steps to add your client provider to the Sandox environment
+
 ## Deploy Your Mulesoft API
 
-In your Mulesoft Anypoint tenant, go to:
+In your Mulesoft Anypoint tenant, click on the three small bars in the top left corner and go to Design Center
 
-Design Center->Create->API Specification
+![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_design_center.png)
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_new_api_specification.png)
+Click on + Create New and select Create API specification
 
-Give your API a name (like "okta solar system") and click "Create".
+![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_design_center_select.png)
+
+![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/new_mulesoft_new_api_specification.png)
+
+Give your API a name (like "okta solar system") and click "Create Specification".
 
 You now have an (almost) empty RAML file to design your API.
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_empty_raml.png)
+![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/new_mulesoft_empty_raml.png)
 
 Next, copy the RAML template from the Okta API Center repo into the Mulesoft editor.
 
@@ -61,19 +78,19 @@ Update the values for `AUTHORIZE_URL` and `TOKEN_URL`.
 
 The file should save automatically; you can do command-s to force the save.
 
-Now click the “Publish to Exchange” icon in the upper right.
+Now click the “Publish” button in the upper right and select "Publish to Exchange"
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_publish_to_exchange.png)
+![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/new_mulesoft_publish_to_exchange.png) 
 
-And click publish again:
+Enter am Asset version 1.0.0 and an API version 1 and click "Publish to Exchange". When it is complete, click Done
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_publish_to_exchange_detail.png)
+![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/new_mulesoft_publish_to_exchange_detail.png)
 
-Now go to the Anypoint API Manager: Management Center->API Manager
+In your Mulesoft Anypoint tenant, click on the three small bars in the top left corner and go to API Manager
 
 Click the “Manage API" dropdown, and then “Manage API from Exchange”
 
-Start typing your API name (“okta-solar-system”) in the API name field to search for it.
+Start typing your API name (“okta solar system”) in the API name field to search for it.
 
 Choose the following options and click "Save". (Note that you might need to click somewhere in the Path field to activate the Save button.)
 
@@ -87,23 +104,25 @@ Proxy deployment target: CloudHub
 Path: /
 ```
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_manage_api_from_exchange.png)
+![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/new_mulesoft_manage_api_from_exchange.png)
 
 You now have a Settings screen for your API. Scroll down to the Deployment Configuration section, choose a runtime version (3.9.x works well), and enter a unique name for your cloudhub deployment. Make sure you save this url now.
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_deployment_config.png)
+![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/new_mulesoft_deployment_config.png)
 
-Click "deploy" to deploy your API to cloudhub. The deployment can take a few seconds or sometimes longer. You should see a successful deployment message when you are done:
+Click "Deploy" to deploy your API to cloudhub. The deployment can take a few seconds or sometimes longer. You should see a successful deployment message when you are done:
 
 ![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_deployment_successful.png)
 
 Save the path of your cloudhub.io deployment (example: "http://my-api.cloudhub.io") - you'll need it later.
 
+Click Close
+
 ## Set up Mulesoft Access Policies for Your API
 
 On the main settings screen of your API, click on "Policies",
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_click_policies.png)
+![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/new_mulesoft_click_policies.png)
 
 Then, click on “Apply New Policy” and select "OpenID Connect access token enforcement".
 
@@ -122,7 +141,7 @@ For Methods, choose GET and for the URI template regex, enter:
 /planets
 ```
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_apply_access_policy.png)
+![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/new_mulesoft_apply_access_policy.png)
 
 Be sure to click "Apply". 
 
@@ -136,23 +155,25 @@ We need to set up one more policy to show how different users get different acce
 
 Any access tokens sent to Mulesoft need to be minted by a client that Mulesoft recognizes. Mulesoft supports dynamic client registration with Okta, which is pretty cool.
 
-In Mulesoft Anypoint, go to Exchange, where you will see a list of assets. Generally, the quickest way to find your API is to click on your organization name in the left-hand column.
+In your Mulesoft Anypoint tenant, click on the three small bars in the top left corner and go to Exchange, where you will see a list of assets. Generally, the quickest way to find your API is to click on your organization name in the left-hand column.
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_assets.png)
+![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/new_mulesoft_assets.png)
 
-Click on your REST API (not the connector).
+Click on your REST API
 
-You will see the portal home screen of your API. Click on the menu drop-down in the upper right and select "Request access".
+You will see the portal home screen of your API. 
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_request_access.png)
+![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/new_mulesoft_request_access.png)
 
 You will now see the *Request API access* screen:
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_request_API_access.png)
+![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/new_mulesoft_request_API_access.png)
 
-Click *Create a new application* and enter the following values when prompted:
+Click the API Instance pull-down and select your API Instance
+Click the Application pull-down and select + Create a new application
+Enter the following values when prompted:
 
-Name: Solar System Authn
+Application Name: Solar System Authn
 OAuth 2.0 Grant type: Authorization Code Grant
 OAuth 2.0 redirect URIs: http://localhost:8080 (or whatever REDIRECT_URI you established at the beginning of the process).
 
@@ -160,13 +181,13 @@ OAuth 2.0 redirect URIs: http://localhost:8080 (or whatever REDIRECT_URI you est
 
 Click **Create** to create your new client.
 
-You will see the *Request API access* screen. Select your API instance and click **Request API access**.
+You will see the *Request API access* screen. Select your API instance and click **Request access**.
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_req_API_access.png)
+![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/new_mulesoft_req_API_access.png)
 
-You will see an "API Access has been successful!" message.
+You will see an "Your request has been received and approved." message on your screen, and an additional tab will be opened that shows details and statistics about your application.
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_api_access_successful.png)
+![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/new_mulesoft_api_access_successful.png)
 
 ## Wrapping up
 

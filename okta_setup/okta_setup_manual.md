@@ -38,7 +38,7 @@ client_secret
 
 Create one group that will contain silver-level subscribers, and another group that will contain gold-level subscribers.
 
-1. Set up a group: Users->Groups->Add Group
+1. Set up a group: Directory->Groups->Add Group
 2. Name the group “silver subscribers”; you can use the same for the description
 3. Click Add Group
 
@@ -71,6 +71,17 @@ Create one user who is a member of the silver subscribers group, and another use
 | Secondary email: | {{your email}} |
 | Groups: | gold subscribers |
 | Password: | you can choose to either set the user's password now (set by admin) or send the user an activation email. The activation email will go to both the primary and secondary email addresses. |
+
+### Add a CORS Trusted Origin
+
+You need to add a CORS Trusted Origin for http://localhost:8080 if you don't already have one. 
+
+1. Security->API
+2. Click Trusted Origins
+3. Click Add Origin
+4. On the Add Origin Screen, give a name such as "Solar" and add http://localhost:8080 as the Origin URL
+5. Check the boxes for CORS and Redirect
+6. Click Save
 
 ### Add Custom Scopes
 
