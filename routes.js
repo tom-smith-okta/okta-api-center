@@ -32,12 +32,9 @@ module.exports = function (app) {
 
 	app.post('/endSession', function(req, res, next) {
 
-		req.session.access_token = ""
-		res.send("removed access token from server-side session");
+		delete req.session.access_token
 
-		// req.session.destroy(function(err) {
-		// 	res.send("destroyed session");
-		// })
+		res.send("removed access token from server-side session");
 	})
 
 	app.post('/getAccessToken', function(req, res, next) {
@@ -156,6 +153,7 @@ module.exports = function (app) {
 					res.json({ message: 'unauthorized' })
 					console.log("the request is unauthorized")
 				}
+				// Add ec here for 504
 				else {
 					res.json(body)
 				}

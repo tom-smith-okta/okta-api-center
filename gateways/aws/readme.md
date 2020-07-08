@@ -1,10 +1,10 @@
-# Integrating Okta with Amazon API Gateway
+# Integrating Okta with Amazon API Gateway - JWT authorizer
 
 This integration guide describes how to integrate Okta's API Access Management (OAuth as a Service) with Amazon API Gateway.
 
-The basic flow is that Amazon API Gateway will accept incoming requests and pass them on to a custom Lambda authorizer. The Lambda authorizer (which we will set up) will evaluate the access token included in the request and determine whether the access token is 1) valid and 2) contains the appropriate scopes for the requested resource.
+AWS has recently (Spring 2020) released a new way to integrate Amazon API Gateway with external OAuth providers such as Okta: [JWT authorizers](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-jwt-authorizer.html).
 
-We will set up the Lambda authorizer to validate the access tokens against Okta.
+These setup instructions will use this new way of integrating Okta, which is much simpler than setting up a custom authorizer using a Lambda function. The [Lambda authorizer approach](lambda.md) is of course much more powerful and flexible, but you should start with the JWT authorizer approach unless you're certain that you need a Lambda authorizer.
 
 We'll be using a mock "solar system" API that is publicly available, so you don't need to worry about setting up the API itself.
 
@@ -26,157 +26,204 @@ You will also of course need an AWS account.
 
 ### Overview
 
-The high-level process we are going to follow is:
+We are going to set up an "HTTP" type API in API gateway, and add Okta as a JWT source for authorization.
 
-1. Set up your API in Amazon API Gateway
-2. Add a Lambda function to your AWS account to handle authorization (this step includes setting up an IAM role)
-3. Add the Lambda authorization function to selected resources in your API Gateway
+We will also add JWT policies to the API gateway so that specific endpoints will be protected by specific scopes.
 
 ## Set up your API in Amazon API Gateway
 
-In your AWS Management Console, go to API Gateway.
+In your AWS Management Console, go to API Gateway and click **Create API**.
 
-Click “Create API”
+On the "Choose an API type" screen:
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/amazon_api_gateway/aws_api_gateway_create_api.png)
+We are going to build an HTTP API, so click **Build** inside the HTTP API box.
 
-Select *New API* and choose a name and description for your API:
+![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/01_http_api.png)
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/amazon_api_gateway/aws_api_gateway_new_api_settings.png)
+In the **Create and configure integrations** box, click **Add integration**, then assign the following values:
 
-Click **Create API**
+Integrations: HTTP
+Method: ANY
+URL endpoint: https://okta-solar-system.herokuapp.com
+API name: okta solar system
 
-We now have an “empty” API
+![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/02_create_and_configure.png)
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/amazon_api_gateway/aws_api_gateway_empty.png)
+Click **Review and Create**.
 
-Now create a method: Actions->Create Method->GET
+You should now see an overview screen of your API.
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/amazon_api_gateway/aws_api_gateway_create_method_get.png)
+Click **Create**.
 
-Click the checkmark to save the new method.
+Wait a second for a value to appear in the "Attached deployment" column, so you know that your API is deployed.
 
-In the GET - Setup screen, choose the following options:
+![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/05_api_details.png)
 
-* Integration type: HTTP
-* Use HTTP Proxy integration: yes
-* HTTP method: GET
-* Endpoint URL: https://okta-solar-system.herokuapp.com
-* Content Handling: Passthrough
-* Use Default Timeout: yes
+At this point, you can click on the **Invoke URL** and you will see that you are successfully proxying the solar system API home page:
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/amazon_api_gateway/aws_api_gateway_get_setup.png)
+![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/06_proxy_works.png)
 
-Click **Save**.
+>Stash your **Invoke URL** somewhere handy.
 
-Your GET request should now look like this:
+>Note: throughout this project, we are just going to use the default Stage for this API, which means that updates will deploy automatically. So, you should not have to click the **Deploy** button to successfully complete this setup.
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/amazon_api_gateway/aws_api_gateway_get_method_execution.png)
+### Add a route
 
-At this point, test the gateway to ensure that it's properly proxying requests:
+Now let's add a route to our solar system API, so we can start getting some actual data back and see how authorization works.
 
-Click the **Actions** button, then *Deploy API*.
+For this first route, we're just going to do some validation of the access token. We'll add scopes to the equation later, after we know that our authorization integration is working.
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/amazon_api_gateway/aws_api_gateway_deploy_api.png)
+Click on Develop->Routes, then **Create**.
 
-For *Deployment Stage*, choose **[New Stage]**, and for *Stage name*, enter `test`
+On the **Create a route** screen, choose GET as your method, and enter
 
-You don't need to enter anything for the *Stage description* and *Deployment description* fields, but you can if you wish.
+`/asteroids`
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/amazon_api_gateway/aws_api_gateway_new_stage.png)
+in the path field:
 
-Now click **Deploy**
+![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/07_create_route_asteroids.png)
 
-You will now have an *Invoke URL* where you can test the proxy.
+Click **Create** to create the route.
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/amazon_api_gateway/aws_api_gateway_invoke_url.png)
+On the **Routes** screen, click on **GET** underneath the `/asteroids` path, and you will see options to **Attach authorizer** and **Attach integration**:
 
-Click the Invoke URL, and you should arrive at a simple page with the text "Okta solar system api":
+![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/08_route_details_asteroids.png)
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/amazon_api_gateway/aws_api_gateway_solar-system_home.png)
+Click **Attach authorizer** and you will go to the Authorization screen:
 
-This Invoke URL is important; we're going to use it as the GATEWAY_URI for our sample application.
+![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/09_first_authorizer.png)
 
-Now, let's add a couple of "real" endpoints to the proxy.
+Click **Create and attach an authorizer**
 
-Go back to the API Gateway, and under your API name in the left-hand side, click *Resources*.
+On the **Create JWT authorizer** screen, populate the **Authorizer settings** with the following values:
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/amazon_api_gateway/aws_api_gateway_resources.png)
+Name: Okta
 
-Click the **Actions** button and select *Create Resource*.
+Identity source: $request.header.Authorization
 
-Leave the *Configure as proxy resource* box unchecked.
-*Resource Name*: `planets`
-*Resource Path*: `planets`
+Issuer URL: {{ISSUER}}
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/amazon_api_gateway/aws_api_gateway_planets.png)
+(example: https://dev-399486.okta.com/oauth2/default)
 
-Click **Create Resource**.
+Audience: api://default
 
-Now let's add a method to that Resource. Click Actions -> Create Method -> GET->checkmark.
+![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/10_authorizer_settings.png)
 
-Just as we did for the previous definition of GET, we're going to choose:
+Click **Create and attach**.
 
-*Integration type*: HTTP
+Your **Authorization** screen should look something like this:
 
-*Use HTTP Proxy integration*: **Yes**
+![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/11_authorizer_details.png)
 
-*HTTP Method*: GET
+Now, we need to attach an "integration" to the `/asteroids` route.
 
-*Endpoint URL*: `https://okta-solar-system.herokuapp.com/planets`
+Click Develop->Routes and select the **GET** method of your `/asteroids` route (it may already be selected.)
 
-*Content Handling*: Passthrough
+![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/12_routes_attach_integration_asteroids.png)
 
-*Use Default Timeout*: Yes
+Click **Attach integration**.
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/amazon_api_gateway/aws_api_gateway_planets_setup.png)
+![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/13_routes_attach_integration_asteroids.png)
 
-Click **Save**.
+Click **Create and attach an integration**.
 
-The sample application will test two endpoints:
+On the **Create an integration** screen, populate the form with the following values:
 
-`/planets`
-and
-`/moons`
+Integration with: HTTP URI
+HTTP method: GET
+URL: https://okta-solar-system.herokuapp.com/asteroids
 
-If you would like to add the `/moons` endpoint, go ahead and do that now, using the same steps you did for `/planets`. The `/moons` endpoint is not required, but it helps to show how different users can have access to different resources. We'll assign the different scopes required to access these endpoints when we set up the Lambda authorization function.
+![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/14_create_an_integration.png)
 
-## Set up the Lambda authorizer
+Click **Create**.
 
-Amazon API Gateway uses a Lambda function to inspect access tokens. So, we need to set up a Lambda function as an authorizer for this API.
+Your integration should look something like this:
 
-Follow the instructions [here](https://github.com/tom-smith-okta/node-lambda-oauth2-jwt-authorizer) to set up the Lambda authorizer.
+![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/15_asteroid_integration_complete.png)
 
-> Stop when you get to the *Testing* section, and come back to this document.
+### Test the first route
 
-Now that you have set up your authorizer, we can add it to the `/planets` method we created earlier.
+When we initially set up the API, we verified that the **Invoke URL** loads the home page of the target solar system API.
 
-## Add the Lambda Authorizer to API Resources
+Now, if we try to get data from a route (/asteroids) that we've attached an authorizer to (without including an access token), we should get an "Unauthorized" error:
 
-Click on the *Resources* section of your API, then click on the GET method that is a child of /planets:
+![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/16_asteroids_unauthorized.png)
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/amazon_api_gateway/aws_api_gateway_method_req.png)
+So, the API gateway is successfully blocking the request because it doesn't have an access token.
 
-Click *Method Request*
+Let's get an access token and see if the authorization process works.
 
-In Settings->Authorization, choose the Lambda Authorizer that you set up.
+In the `.env` file of the test application, add "AWS_JWT" as the value for GATEWAY, and add your Invoke URL as the value for GATEWAY_URI.
 
-![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/amazon_api_gateway/aws_api_gateway_authorizer.png)
+Restart the node app.
 
-Click the checkmark to save the authorizer.
+Load the web page again, and click on "authenticate" in the Bronze access box to get an access token. Then, click on the **show me some asteroids!** button to get a selected list of asteroids.
 
-## Deploy the API
+Once you're able to successfully get a list of asteroids, we can move on to adding more routes to the gateway, and these new routes will require scopes to allow access.
 
-Now that we've added authorization to one of our resources, we can deploy the API again and test it.
+### Add the /planets route
 
-Click the **Actions** button, then *Deploy API*.
+Go to your API Gateway and click Develop->Routes.
 
-Click **Deploy**.
+On the **Routes** screen, click **Create**.
 
-If you click on the *Invoke URL* as-is, then you will again arrive at the home for the solar system API.
+On the **Create a route** screen, add a new route with:
 
-If you append */planets* to the Invoke URL, you will get an *Unauthorized* message. This means that our authorizer is doing its job and blocking attempts to reach the `/planets` resource without a valid access token.
+Method: GET
+Route: /planets
+
+![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/17_create_route_planets.png)
+
+Click **Create**.
+
+On the **Routes** screen, select the GET method of the `/planets` endpoint.
+
+Click **Attach authorizer**.
+
+On the **Authorization** screen, click on the **Select existing authorizer** box, and choose Okta.
+
+![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/18_select_existing_authorizer.png)
+
+Click **Attach authorizer**.
+
+The **Authorization** screen should now look something like this:
+
+![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/19_authorizer_details.png)
+
+Now, let's add a scope to further protect this route.
+
+Click **Add scope**.
+
+Enter http://myapp.com/scp/silver in the scope field, then click **Save**.
+
+We still need to add an "integration" for this route, so click on Develop->Routes.
+
+Select the GET method of the `/planets` endpoint.
+
+Click **Attach integration**.
+
+On the **Integrations** screen, click **Create and attach an integration**.
+
+![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/20_attach_integration.png)
+
+On the **Create an integration** screen, enter the following values:
+
+Integration target: HTTP URI
+HTTP method: GET
+URL: https://okta-solar-system.herokuapp.com/planets
+
+![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/21_add_integration_planets.png)
+
+Click **Create**.
+
+You now have another route set up for your API gateway. The `/planets` route points to https://okta-solar-system.herokuapp.com/planets. Okta is the authorizer for this route, and the access token must include the http://myapp.com/scp/silver scope for the request to be honored.
+
+### Add the /moons route
+
+To see how different scopes can align with Okta groups, routes, and scopes, you can add another route: `/moons`.
+
+Follow the same steps as the `/planets` route, but for the integration use the URI https://okta-solar-system.herokuapp.com/moons, and for the scope use http://myapp.com/scp/gold.
 
 ## Testing
 
-Now that you have set up Amazon API Gateway as an API proxy, you can test out the whole flow. Take note of the Invoke URL, jump back to the main `readme` in this repo, and go to the `Test your application and access tokens` section.
+Now you can go back to the test application and see if the "show me the planets!" and "show me some moons!" buttons work.

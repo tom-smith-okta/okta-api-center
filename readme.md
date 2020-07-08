@@ -1,23 +1,28 @@
 # Okta API Center
 
-TL;DR:
-1. use the custom [Terraform tool](https://okta-terraform.herokuapp.com) to set up your Okta tenant automatically with all of the objects that you need to generate access tokens with scopes
-2. use the sample application `app.js` to enable sample users to get access tokens (with scopes) from Okta
-3. set up your API Gateway to validate access tokens issued by Okta
-
 ## Overview
 
 The Okta API Center gives developers tools to see how easily Okta's API Access Management (OAuth as a Service) capabilities integrate with leading API gateways and application proxies.
+
+This project includes:
+
+1. Instructions for setting up various leading API gateways to use Okta as an authorization server
+2. Instructions for setting up Okta with users, groups, authorization policies, and custom scopes (an automated Terraform script is also available)
+3. A sample Node.js application that will allow sample end-users to get access tokens, and pass those access tokens to protected endpoints in your API gateway
 
 If you want to see what these flows can look like from an end-user perspective, you can check out the [public demo site](https://okta-api-am.herokuapp.com).
 
 Okta is a standards-compliant OAuth 2.0 authorization server and a certified OpenID Provider.
 
+## Quick setup
+1. use either the automated [Terraform tool](https://okta-terraform.herokuapp.com) or the [step-by-step instructions](okta_setup_manual.md) to set up your Okta tenant with all of the objects that you need to generate access tokens with scopes
+2. use the sample application `app.js` to enable sample users to get access tokens (with scopes) from your Okta authorization server
+3. set up your API Gateway to validate access tokens issued by Okta
+4. test your setup by using the sample application to send access tokens to your API gateway.
+
 ## Prerequisites
 
 * __An Okta tenant__ - If you don't already have an Okta tenant, you can sign up for a free-forever [Okta developer edition](https://developer.okta.com/).
-
-> Note: These instructions assume that you are using the developer edition of Okta. If you are using the Enterprise version, some of the menus may be a little different.
 
 * __Node.js__ - the test application for this setup runs on Node.
 
@@ -25,7 +30,7 @@ Okta is a standards-compliant OAuth 2.0 authorization server and a certified Ope
 
 ## Gateways
 
-Okta is a standards-compliant OAuth 2.0 authorization server and a certified OpenID Provider, so Okta will work with any API gateway or service that supports an external OAuth provider. As of today (October 2019), we have directly proven out compatibility with the following gateways (and reverse proxies):
+Okta is a standards-compliant OAuth 2.0 authorization server and a certified OpenID Provider, so Okta will work with any API gateway or service that supports an external OAuth provider. As of today (July 2020), we have directly proven out compatibility with the following gateways (and reverse proxies):
 
 * Amazon API gateway
 * Apigee
@@ -47,7 +52,7 @@ The overall setup has the following components:
 
 You may find it helpful to read the following overview before jumping in to the setup steps.
 
-## Overview of API access management
+## Overview of API access management & sample application
 
 An API access management workflow typically includes the following components:
 * An API
@@ -69,21 +74,26 @@ With that use-case as context, the detailed setup instructions follow.
 
 To illustrate this use-case, you need to set up a number of different objects (users, groups, clients, policies, etc.) in your Okta tenant. You have a couple options for setting up these objects:
 
-1. Use the provided [Terraform tool](https://okta-terraform.herokuapp.com). The Terraform tool is a (non-supported) service that will take a couple of values from you (Okta API token, Okta tenant URL) and set up all of the objects for you automatically.
-2. Set up the objects in your Okta tenant by hand. This will take a little longer, but it's still pretty quick, and will also get you more familiar with Okta and how easy it is to configure an authorization server. Instructions for setting up your Okta tenant are in the [okta_setup folder](okta_setup/okta_setup_manual.md).
+#### Terraform
+Use the [automated Terraform tool](https://okta-terraform.herokuapp.com). The Terraform tool is a (non-supported) service that will take a couple of values from you (Okta API token, Okta tenant URL) and set up all of the objects for you automatically.
+
+The Terraform script is here.
+
+#### Step-by-step "manual" instructions
+Set up the objects in your Okta tenant using the Okta admin UI. This will take a little longer, but it's still pretty quick, and will also get you more familiar with Okta and how easy it is to configure an authorization server. Instructions for setting up your Okta tenant are [here](okta_setup_manual.md).
 
 After you've set up your Okta tenant, come back here and move on to testing your setup against the test application.
 
 ### Set up the test application
 
-The test application allows your end-users to authenticate against your Okta tenant and get an access token, which the application will then send to your chosen API Gateway.
+The test application allows your end-users to authenticate against your Okta tenant and get an access token (via the authorization code grant flow). The application can then send the access token to protected endpoints on your chosen API Gateway.
 
 If you've used the Terraform tool to set up your Okta tenant, there are just a couple of adjustments that need to be made to your tenant "manually":
 
 * go into your Okta tenant and set passwords (or send activation emails) for the two new users that were created: carl.sagan and jodie.foster.
-* nice to have: add the domain of your redirect_uri as a [trusted origin](https://developer.okta.com/docs/guides/enable-cors/overview/#granting-cross-origin-access-to-websites)
+* add the domain of your redirect_uri as a [trusted origin](https://developer.okta.com/docs/guides/enable-cors/overview/#granting-cross-origin-access-to-websites)
 
-### Prerequisites
+### Prerequisites for the sample application
 
 You'll need the following values from setting up your Okta tenant:
 
@@ -101,7 +111,7 @@ CLIENT_ID
 
 CLIENT_SECRET
 
-### Setup
+### Setup for sample application
 
 1. Download this repo:
 
@@ -153,6 +163,8 @@ Similarly, if you click the authenticate button in the "gold access" box and aut
 
 The "raw" access token is available in the developer console if you want to inspect it.
 
+> Note: a "real world" web application that is using the authorization code grant flow would not typically send the access token to the browser, but would rather keep it server-side. We're sending it back to the browser here for demo purposes.
+
 > Note: if you authenticate as carl.sagan when you click on the authenticate button in the "gold access" box, you will successfully authenticate (get an Okta session) but you will not get an access token because the requested scopes do not line up with the policy you've set up in the authorization server.
 
 > Note: if you've followed the default Okta setup instructions, or used the Terraform setup tool, your default access policy will still be active in your tenant. The default access policy actually allows any user to be granted any scope (as long as the scope is requested in the authorization request). If you want to see if the authorization policies are "really" working, then just make the default policy for the authorization server inactive.
@@ -170,11 +182,11 @@ Each API Gateway accommodates external OAuth providers slightly differently. Fol
 * Software AG
 * Tyk
 
-Please note that I have provided a very simple solar system API here: https://okta-api-am.herokuapp.com
+Please note that I have provided a very simple solar system API here: https://okta-solar-system.herokuapp.com
 
-This API echoes a list (json object) of the planets: https://okta-api-am.herokuapp.com/planets
+This API echoes a list (json object) of the planets: https://okta-solar-system.herokuapp.com/planets
 
-And a (partial!) list of the moons: https://okta-api-am.herokuapp.com/moons
+And a (partial!) list of the moons: https://okta-solar-system.herokuapp.com//moons
 
 For demo purposes, the API is wide open. In a real-world use-case you would of course lock down the API so that it could be accessed only through your gateway.
 
