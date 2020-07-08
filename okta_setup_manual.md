@@ -21,117 +21,142 @@ If you don't have a default authorization server, you can [set one up](https://d
 At the end of this setup, you will have the following values, which will be needed to set up the test application and the API gateway:
 
 client_id
-client_secret
 
+client_secret
 
 ## Setup
 
-### Create an OIDC client
+### Create an OIDC Application
 
-Click “Applications” and then “Add Application”.
+1. Click “Applications” and then “Add Application”.
+2. Choose “Web”, then Next.
+3. The following login redirect URI is created for you by default:
+	`http://localhost:8080/authorization-code/callback`
+4. Add another login redirect URI:
+	`http://localhost:8080`
+5. Leave all of the other default settings as-is. Click Done.
 
-Choose “Web”, then Next.
+> You've created an OIDC client in your Okta tenant. Take note of your `Client ID` and `Client secret`, because we'll need those later.
 
-The following login redirect URI is created for you by default:
-
-`http://localhost:8080/authorization-code/callback`
-
-Add another login redirect URI:
-
-`http://localhost:8080`
-
-Leave all of the other default settings as-is.
-
-Click Done.
-
-You've created an OIDC client in your Okta tenant. Take note of your Client ID and Client secret, because we'll need those later.
-
-### Create groups
+### Create Groups
 
 Create one group that will contain silver-level subscribers, and another group that will contain gold-level subscribers.
 
-1. Set up a group: Users->Groups->Add Group
+1. Set up a group: Directory->Groups->Add Group
 2. Name the group “silver subscribers”; you can use the same for the description
 3. Click Add Group
 
-Repeat the same steps for the "gold subscribers" group.
+> Repeat the same steps for the "gold subscribers" group.
 
-### Create users
+### Create Users
 
 Create one user who is a member of the silver subscribers group, and another user who is a member of the gold subscribers group.
 
 1. Add a user: Users->People->Add Person
-	First name: Carl
-	Last name: Sagan
-	Username: carl.sagan@mailinator.com
-	Primary email: carl.sagan@mailinator.com
-	Secondary email: {{your email}}
-	Groups: silver subscribers
-	Password: you can choose to either set the user's password now (set by admin) or send the user an activation email. The activation email will go to both the primary and secondary email addresses.
-2. Add another user: Users->People->Add Person
-	First name: Jodie
-	Last name: Foster
-	Username: jodie.foster@mailinator.com
-	Primary email: carl.sagan@mailinator.com
-	Secondary email: {{your email}}
-	Groups: gold subscribers
-	Password: you can choose to either set the user's password now (set by admin) or send the user an activation email. The activation email will go to both the primary and secondary email addresses.
 
-### Add custom scopes
+| Field | Value |
+| :--- 	| :--- 	|
+| First name: | Carl |
+| Last name: | Sagan |
+| Username: | carl.sagan@mailinator.com |
+| Primary email: | carl.sagan@mailinator.com |
+| Secondary email: | {{your email}} |
+| Groups: | silver subscribers |
+| Password: | you can choose to either set the user's password now (set by admin) or send the user an activation email. The activation email will go to both the primary and secondary email addresses. |
+
+2. Add another user: Users->People->Add Person
+
+| Field | Value |
+| :--- 	| :--- 	|
+| First name: | Jodie |
+| Last name: | Foster |
+| Username: | jodie.foster@mailinator.com |
+| Primary email: | jodie.foster@mailinator.com |
+| Secondary email: | {{your email}} |
+| Groups: | gold subscribers |
+| Password: | you can choose to either set the user's password now (set by admin) or send the user an activation email. The activation email will go to both the primary and secondary email addresses. |
+
+### Add a CORS Trusted Origin
+
+You need to add a CORS Trusted Origin for http://localhost:8080 if you don't already have one. 
+
+1. Security->API
+2. Click Trusted Origins
+3. Click Add Origin
+4. On the Add Origin Screen, give a name such as "Solar" and add http://localhost:8080 as the Origin URL
+5. Check the boxes for CORS and Redirect
+6. Click Save
+
+### Add Custom Scopes
 
 Create custom scopes in your authorization server to represent "gold" privileges and "silver" privileges.
+
+>Note: we are going to structure scopes as URLs per [API best practices](https://developer.okta.com/docs/concepts/api-access-management).
 
 1. API->Authorization Servers->default
 2. Click the Scopes tab
 3. Click Add Scope
-	Name: http://myapp.com/scp/silver
-	Description: silver scope
-	Default scope: no
-	Metadata: yes
+	| Field | Value	|
+	| :---  | :--- 	|
+	| Name: | http://myapp.com/scp/silver |
+	| Description: | silver scope |
+	| Default scope: | [non checked] |
+	| Metadata: | [checked] |
 
 4. Click Create
 
-Repeat the same steps for the "gold" scope, using `http://myapp.com/scp/gold` as the name.
+> Repeat the same steps for the "gold" scope, using `http://myapp.com/scp/gold` as the name.
 
-### Add an authorization policy
+### Add an Authorization Policy
 
-> Important: by default, the authorization server has a Default Policy that honors all requests for all scopes. This is great for development and troubleshooting, but to test that users are being accurately denied access to certain scopes, you need to make the Default Policy inactive.
+> IMPORTANT: By default, the authorization server has a Default Policy that honors all requests for all scopes. This is great for development and troubleshooting, but to test that users are being accurately denied access to certain scopes, you need to make the Default Policy inactive.
 
 Create an authorization policy that will govern when scopes are granted.
 
 1. API->Authorization Servers->default
 2. Click the Access Policies tab
 3. Click Add New Access Policy
-	Name: Solar system API access
-	Description: Solar system API access
-	Assign to: My Web App (also OK to leave assigned to all clients for demo purposes)
+	| Field | Value	|
+	| :---  | :--- 	|
+	| Name: | Solar system API access |
+	| Description: | Solar system API access |
+	| Assign to: | My Web App (also OK to leave assigned to `All clients` for demo purposes) |
 4. Click Create Policy
 
-### Add rules
+### Add Rules
 
 Add rules to your policy.
 
 1. In your policy, click the Add Rule button
-	Rule Name: silver access to solar system API
-	Grant Type: Authorization Code (also OK to leave all selected for demo purposes)
-	User is - Assigned the app and a member of the following:
-		Groups: silver subscribers
-	Scopes requested - the following scopes:
-		click "OIDC default scopes" to populate the OIDC default scopes
-		http://myapp.com/scp/silver
+
+	| Field | Value	|
+	| :---  | :--- 	|
+	| Rule Name: | silver access to solar system API |
+	| Grant Type: | Authorization Code (also OK to leave all selected for demo purposes) |
+	| User is: 	| Assigned the app and a member of the following:
+	| &nbsp;			| Groups: silver subscribers
+	| Scopes requested: | Select "The following scopes:" |
+	| &nbsp; 			| Click "OIDC default scopes" to populate the OIDC default scopes |
+	| &nbsp; 			| Then add following scopes: "http://myapp.com/scp/silver" |
+
 2. Click Create Rule
 
 Now the gold access rule. Note that we are adding both silver *and* gold scopes to the gold subscribers group.
 
 1. In your policy, click the Add Rule button
-	Rule Name: gold access to solar system API
-	Grant Type: Authorization Code (also OK to leave all selected for demo purposes)
-	User is - Assigned the app and a member of the following:
-		Groups: gold subscribers
-	Scopes requested - the following scopes:
-		click "OIDC default scopes" to populate the OIDC default scopes
-		http://myapp.com/scp/gold
-		http://myapp.com/scp/silver
+
+	| Field | Value	|
+	| :---  | :--- 	|
+	| Rule Name: | gold access to solar system API |
+	| Grant Type: | Authorization Code (also OK to leave all selected for demo purposes) |
+	| User is: | Assigned the app and a member of the following: |
+	| &nbsp;	|	Groups: gold subscribers |
+	| Scopes requested: | Select "The following scopes:" |
+	| &nbsp; 			| Click "OIDC default scopes" to populate the OIDC default scopes |
+	| &nbsp; 			| Then add following scopes: |
+	| &nbsp;			| http://myapp.com/scp/gold |
+	| &nbsp;			| http://myapp.com/scp/silver |
+
 2. Click Create Rule
 
 ### What we've done

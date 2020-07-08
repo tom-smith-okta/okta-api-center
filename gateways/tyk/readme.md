@@ -2,15 +2,17 @@
 
 Okta integrates with Tyk in several different ways:
 
-* Admin SSO
-* Authentication (OIDC)
-* JWT validation (API Access Management / OAuth as a Service)
+* Dashboard SSO
+* Developer Portal SSO
+* API Authentication 
+** OIDC - Open ID Connect
+** JWT with scope claims
 
 This guide will describe the API Access Management integration in detail, but we will briefly touch on the Admin SSO integration and the OIDC integration.
 
 ### Admin SSO
 
-Tyk supports SSO to the admin dashboard via OIDC. Instructions are here: [https://tyk.io/docs/integrate/sso/dashboard-login-okta-tib/](https://tyk.io/docs/integrate/sso/dashboard-login-okta-tib/)
+Tyk supports SSO to the admin dashboard and developer portal via OIDC. Instructions are here: [https://tyk.io/docs/integrate/sso/dashboard-login-okta-tib/](https://tyk.io/docs/integrate/sso/dashboard-login-okta-tib/)
 
 Note: you must install [Tyk Identity Broker](https://tyk.io/docs/integrate/sso/dashboard-login-ldap-tib/) as part of this process
 
@@ -18,17 +20,17 @@ Note: you must install [Tyk Identity Broker](https://tyk.io/docs/integrate/sso/d
 
 Tyk can enforce a policy that requires a valid OIDC ID Token in order to access an endpoint. Set up Okta as an OIDC provider and Tyk will check for a valid id token before passing on the request to an endpoint.
 
-Instructions are here: [https://tyk.io/docs/security/your-apis/openid-connect/](https://tyk.io/docs/security/your-apis/openid-connect/)
+Instructions are here: [https://tyk.io/docs/basic-config-and-security/security/authentication-authorization/openid-connect/](https://tyk.io/docs/basic-config-and-security/security/authentication-authorization/openid-connect/)
 
 ## API Access Management
 
-Tyk supports the evaluation of json web tokens (jwts) to control access to endpoints.
+Tyk supports the evaluation of JSON web tokens (JWTs) to control access to endpoints.
 
-Before going in to the step-by-step process to enable this capability, it’s important to review how Tyk approaches authorization via jwt, which is different from many other API gateways.
+Before going in to the step-by-step process to enable this capability, it’s important to highlight an optional Tyk feature in regards to JWTs, such as OAuth Access Tokens or OIDC ID tokens, which is different from many other API gateways.
 
-A jwt passed to Tyk must include a “policy id” claim. This policy id tells Tyk which Tyk policy is valid for that jwt. Tyk does not support extracting scopes from external jwts.
+A JWT passed to Tyk can include a “policy id” claim. This policy ID tells Tyk which Tyk policy is valid for that JWT. Alternatively, Tyk can extract scopes from the claims and apply policies based on them.  Tyk will use this policy to determine if a JWT has access to the API it is attempting to access.
 
-So, in using Okta with Tyk, you can populate the policy id in a jwt in two primary ways, depending on your needs and your setup. This is just an overview for now, we'll go through the step-by-step a little later on:
+So, in using Okta with Tyk, you can populate the policy id in a JWT in two primary ways, depending on your needs and your setup. This is just an overview for now, we'll go through the step-by-step a little later on:
 
 1. In the user profile (i.e. user-level): create a custom attribute in the Okta user profile using the Okta Profile editor. This custom attribute must have the same name as the policy id field name in Tyk. Set up a custom claim in your Okta authorization server to always include this claim from the user profile.
 
@@ -39,7 +41,7 @@ So, in using Okta with Tyk, you can populate the policy id in a jwt in two prima
 At the end of this setup, you'll have an architecture where:
 
 1. Users will be able to authenticate against Okta and receive an access token (via the app)
-2. Users will have a "policy id" claim in their access token. The value of this claim will be derived from the user's group membership in Okta, and the policy id will map to a policy id in Tyk.
+2. Users will have a "policy id" claim in their access token. The value of this claim will be derived from the user's group membership in Okta, and the policy id will map to a policy id in Tyk.`
 3. The application will send the access token to the Tyk.
 4. Tyk will check the validity of the access token locally.
 5. If the token and scopes are valid, Tyk will send the request on to the API
@@ -49,7 +51,7 @@ At the end of this setup, you'll have an architecture where:
 ## Prerequisites for integrating Okta + Tyk
 
 1. **An Okta account.** If you don't already have one, you can get a free-forever account at [developer.okta.com](https://developer.okta.com/signup/)
-2. **Tyk** If you don't already have a Tyk tenant set up, you can start [here](https://tyk.io/docs/get-started/‎). For these instructions, we're going to assume you're using Tyk On-Premises.
+2. **Tyk** If you don't already have a Tyk tenant set up, you can create a forever free developer account on Tyk SaaS [here](https://tyk.io/api-gateway/saas/‎) or use [docker-compose to launch an on-prem stack](https://github.com/TykTechnologies/tyk-pro-docker-demo).
 
 ### Step-by-step
 The high-level process we are going to follow is:
