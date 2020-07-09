@@ -12,13 +12,15 @@ We'll be using a mock "solar system" API that is publicly available, so you don'
 
 ### Okta
 
-These instructions assume that you have already set up your Okta tenant and can acquire access tokens from Okta by following the instructions in the [main readme of this repo](readme.md).
+These instructions assume that you have already set up your Okta tenant and can acquire access tokens from Okta by following the instructions in the [main readme of this repo](/readme.md).
 
 As a result of those setup steps, you should have the following values on hand before proceeding:
 
 ISSUER
-	example: https://dev-399486.okta.com/oauth2/default
-	this value will be `{{OKTA_TENANT}}/oauth2/default` unless you've set up a different authorization server in Okta.
+
+example: https://dev-399486.okta.com/oauth2/default
+
+this value will be `{{OKTA_TENANT}}/oauth2/default` unless you've set up a different authorization server in Okta.
 
 ### AWS
 
@@ -43,8 +45,11 @@ We are going to build an HTTP API, so click **Build** inside the HTTP API box.
 In the **Create and configure integrations** box, click **Add integration**, then assign the following values:
 
 Integrations: HTTP
+
 Method: ANY
+
 URL endpoint: https://okta-solar-system.herokuapp.com
+
 API name: okta solar system
 
 ![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/02_create_and_configure.png)
@@ -63,7 +68,7 @@ At this point, you can click on the **Invoke URL** and you will see that you are
 
 ![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/06_proxy_works.png)
 
->Stash your **Invoke URL** somewhere handy.
+>Note: stash your **Invoke URL** somewhere handy.
 
 >Note: throughout this project, we are just going to use the default Stage for this API, which means that updates will deploy automatically. So, you should not have to click the **Deploy** button to successfully complete this setup.
 
@@ -130,7 +135,9 @@ Click **Create and attach an integration**.
 On the **Create an integration** screen, populate the form with the following values:
 
 Integration with: HTTP URI
+
 HTTP method: GET
+
 URL: https://okta-solar-system.herokuapp.com/asteroids
 
 ![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/14_create_an_integration.png)
@@ -170,6 +177,7 @@ On the **Routes** screen, click **Create**.
 On the **Create a route** screen, add a new route with:
 
 Method: GET
+
 Route: /planets
 
 ![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/17_create_route_planets.png)
@@ -209,7 +217,9 @@ On the **Integrations** screen, click **Create and attach an integration**.
 On the **Create an integration** screen, enter the following values:
 
 Integration target: HTTP URI
+
 HTTP method: GET
+
 URL: https://okta-solar-system.herokuapp.com/planets
 
 ![](https://tom-smith-okta-api-center-images.s3.us-east-2.amazonaws.com/amazon_api_gateway/jwt_authorizer/21_add_integration_planets.png)
