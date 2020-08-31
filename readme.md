@@ -10,7 +10,7 @@ This project includes:
 2. Instructions for setting up Okta with users, groups, authorization policies, and custom scopes (an automated Terraform script is also available)
 3. A sample Node.js application that will allow sample end-users to get access tokens, and pass those access tokens to protected endpoints in your API gateway
 
-If you want to see what these flows can look like from an end-user perspective, you can check out the [public demo site](https://okta-api-am.herokuapp.com).
+If you want to see what these flows can look like from an end-user perspective, you can check out the [public demo site](https://okta-api-am.herokuapp.com) and [video](https://youtu.be/n8r-9Gpoods).
 
 Okta is a standards-compliant OAuth 2.0 authorization server and a certified OpenID Provider.
 

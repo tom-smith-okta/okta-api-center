@@ -1,19 +1,28 @@
-﻿# Integrating Okta with Mulesoft Anypoint
+﻿# Integrating Okta with MuleSoft Anypoint
 
-If you're building or managing an API, you're probably using an API gateway to help you manage it. Hopefully, you're also using OAuth and an identity provider (IdP) like [Okta](https://developer.okta.com/) to secure your API through the gateway. Maybe you've also discovered that getting the "OAuth dance" working properly among the gateway, IdP, and application can be tricky.
+There are two ways to integrate Okta as an authorization server with MuleSoft Anypoint:
 
-If you want to see what the whole flow looks like end-to-end, you can see a sample workflow in action [here](https://youtu.be/n8r-9Gpoods).
+1. Integrate Okta as an OpenID Connect Client Provider
+2. Integrate Okta as an authorization server server via MuleSoft's JWT validation policy (requires Mule 4.1 or above)
+
+Broadly speaking, the OIDC client provider integration is deeper and more robust, including dynamic client registration, while the JWT validation method is lighter weight.
+
+If you're not sure which you need, or are not sure where to start, start with the JWT validation method.
+
+This readme describes the OIDC Connect Client Provider method.
+
+The readme for the JWT validation method is [here](jwt_validation_readme.md).
 
 ## Prerequisites for this integration
 
-1. **An Okta tenant.** These instructions assume that you have already set up your Okta tenant and can acquire access tokens from Okta by following the instructions in the [main readme of this repo](readme.md).
+1. **An Okta tenant.** These instructions assume that you have already set up your Okta tenant and can acquire access tokens from Okta by following the instructions in the [main readme of this repo](../readme.md).
 2. **An API Gateway.** If you don't already have a Mulesoft Anypoint account, you can get a free 30-day trial version [here](https://anypoint.mulesoft.com/login/#/signup).
 
 ## Configure your Mulesoft Account
 In your Mulesoft Anypoint tenant, click on the three small bars in the top left corner and go to Access Management (Below Management Center)
 click Client Providers
 click Add Client Provider -> OpenID Connect Dynamic Client Registration
-g
+
 ![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/new_mulesoft_external_identity.png)
 
 ![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/new_mulesoft_dynamic_client_registration.png)
@@ -48,7 +57,7 @@ Repeat these steps to add your client provider to the Sandbox environment
 
 ![alt text](https://s3.us-east-2.amazonaws.com/tom-smith-okta-api-center-images/mulesoft_edit_environment.png)
 
-Repeat these steps to add your client provider to the Sandox environment
+Repeat these steps to add your client provider to the Sandbox environment
 
 ## Deploy Your Mulesoft API
 
@@ -197,7 +206,7 @@ You're now almost ready to test the end-to-end flow with the sample app. Before 
 -- Go to your Okta tenant, find that new client, and assign it to the Everyone group - or at least to the sample users for this app.
 -- update the CLIENT_ID and CLIENT_SECRET values in the `.env` file with the client_id and client_secret from the client that you just created via the Mulesoft UI.
 
-* the Mulesoft Cloudbhub URL - this will be the "GATEWAY_URI" value
+* the Mulesoft Cloudhub URL - this will be the "GATEWAY_URI" value
 
 ## Testing
 

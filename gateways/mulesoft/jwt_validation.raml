@@ -1,0 +1,87 @@
+#%RAML 1.0
+title: Okta API
+version: 1
+baseUri: https://okta-solar-system.herokuapp.com
+
+traits:
+  jwt:
+    headers:
+      authorization:
+        description: Bearer 
+        type: string
+    responses:
+      400:
+        description: Token was not provided.
+      401:
+        description: Bad or expired token. To fix, you should re-authenticate the user.
+      403:
+        description: The client id validation failed.
+      503:
+        description: Error communicating with JWKS server.
+
+/asteroids:
+    get:
+      is: [jwt]
+      description: retrieve a selected list of the asteroids
+      responses:
+        200:
+          body:
+            application/json:
+              example: |
+                {
+                  "data": [
+                    "ceres", "vesta", "pallas", "hygiea"
+                  ],
+                  "success": true,
+                  "status": 200
+                }
+
+/moons:
+    get:
+      is: [jwt]
+      description: retrieve a list of the moons
+      responses:
+        200:
+          body:
+            application/json:
+              example: |
+                {
+                  "data": [
+                    "callisto", "europa"
+                  ],
+                  "success": true,
+                  "status": 200
+                }
+
+/planets:
+    get:
+      is: [jwt]
+      description: retrieve a list of the planets
+      responses:
+        200:
+          body:
+            application/json:
+              example: |
+                {
+                  "data": [
+                    "jupiter", "mars"
+                  ],
+                  "success": true,
+                  "status": 200
+                }
+
+/visitors:
+    get:
+      description: retrieve a list of interstellar visitors
+      responses:
+        200:
+          body:
+            application/json:
+              example: |
+                {
+                  "data": [
+                    "example1", "example2"
+                  ],
+                  "success": true,
+                  "status": 200
+                }
