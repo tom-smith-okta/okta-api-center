@@ -78,14 +78,14 @@ After your API has deployed, scroll to the top of the page to find your Proxy UR
 
 For example: http://my-api.us-e2.cloudhub.io/
 
->Note: take note now of your proxy URL. You'll need it later and it can sometimes be hard to find again.
+>Note: take note now of this cloudhub proxy URL. You'll need it later and it can sometimes be hard to find again.
 
 First, test to see that the API is being proxied correctly.
 
 Load the following url in a web browser:
 
 ```
-http://{{my-app-name}}.cloudhub.io/visitors
+{{cloudhub proxy url}}/visitors
 ```
 
 We have defined this endpoint in the RAML file to be completely open, so you should see a simple json object listing two of the recent visitors to the solar system.
@@ -95,7 +95,7 @@ Now let's see if the authorization layer is working.
 Load the following url in a web browser:
 
 ```
-http://{{my-app-name}}.cloudhub.io/asteroids
+{{cloudhub proxy url}}/asteroids
 ```
 
 We have defined this endpoint in the RAML file to be protected by a JWT, so you should see a response like the following:
@@ -137,16 +137,27 @@ Select JWT Validation->1.1.3 then click Configure Policy.
 Use the following values:
 
 (default) JWT origin: HTTP Bearer Authentication Header
+
 (default) JWT Signing Method: RSA
+
 (default) JWT Signing Key Length: 256
+
 JWT Key origin: JWKS
+
 JWKS Url: {{your JWKS URL}}
+
 (default) JWKS Caching TTL (minutes): 60
+
 Skip Client Id Validation: check
+
 Validate Audience Claim: leave blank for now
+
 Expiration Claim Mandatory: leave blank for now
+
 Not Before Claim Mandatory: leave blank for now
+
 Validate Custom Claim: leave blank for now
+
 Method & Resource conditions:
 * Apply configurations to specific methods & resources
 
