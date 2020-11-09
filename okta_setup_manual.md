@@ -38,6 +38,8 @@ client_secret
 
 > You've created an OIDC client in your Okta tenant. Take note of your `Client ID` and `Client secret`, because we'll need those later.
 
+> Note: the developer edition assigns new OIDC applications to the Everyone group by default. If you're not using the developer edition, take a moment to assign your new application to the Everyone group.
+
 ### Create Groups
 
 Create one group that will contain silver-level subscribers, and another group that will contain gold-level subscribers.
