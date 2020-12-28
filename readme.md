@@ -7,7 +7,7 @@ The Okta API Center gives developers tools to see how easily Okta's API Access M
 This project includes:
 
 1. Instructions for setting up various leading API gateways to use Okta as an authorization server
-2. Instructions for setting up Okta with users, groups, authorization policies, and custom scopes (an automated Terraform script is also available)
+2. Instructions for setting up Okta with users, groups, authorization policies, and custom scopes
 3. A sample Node.js application that will allow sample end-users to get access tokens, and pass those access tokens to protected endpoints in your API gateway
 
 If you want to see what these flows can look like from an end-user perspective, you can check out the [public demo site](https://okta-api-am.herokuapp.com) and [video](https://youtu.be/n8r-9Gpoods).
@@ -15,10 +15,10 @@ If you want to see what these flows can look like from an end-user perspective, 
 Okta is a standards-compliant OAuth 2.0 authorization server and a certified OpenID Provider.
 
 ## Quick setup
-1. use either the automated [Terraform tool](https://okta-terraform.herokuapp.com) or the [step-by-step instructions](okta_setup_manual.md) to set up your Okta tenant with all of the objects that you need to generate access tokens with scopes
+1. follow the [step-by-step instructions](okta_setup_manual.md) to set up your Okta tenant with all of the objects that you need to generate access tokens with scopes
 2. use the sample application `app.js` to enable sample users to get access tokens (with scopes) from your Okta authorization server
 3. set up your API Gateway to validate access tokens issued by Okta
-4. test your setup by using the sample application to send access tokens to your API gateway.
+4. test your setup by using the sample application to send requests with access tokens to your API gateway.
 
 ## Prerequisites
 
@@ -72,26 +72,13 @@ With that use-case as context, the detailed setup instructions follow.
 
 ### Set up your Okta tenant
 
-To illustrate this use-case, you need to set up a number of different objects (users, groups, clients, policies, etc.) in your Okta tenant. You have a couple options for setting up these objects:
-
-#### Terraform
-Use the [automated Terraform tool](https://okta-terraform.herokuapp.com). The Terraform tool is a (non-supported) service that will take a couple of values from you (Okta API token, Okta tenant URL) and set up all of the objects for you automatically.
-
-The Terraform script is here.
-
-#### Step-by-step "manual" instructions
-Set up the objects in your Okta tenant using the Okta admin UI. This will take a little longer, but it's still pretty quick, and will also get you more familiar with Okta and how easy it is to configure an authorization server. Instructions for setting up your Okta tenant are [here](okta_setup_manual.md).
+To illustrate this use-case, you need to set up a number of different objects (users, groups, clients, policies, etc.) in your Okta tenant. Instructions for setting up your Okta tenant are [here](okta_setup_manual.md).
 
 After you've set up your Okta tenant, come back here and move on to testing your setup against the test application.
 
 ### Set up the test application
 
 The test application allows your end-users to authenticate against your Okta tenant and get an access token (via the authorization code grant flow). The application can then send the access token to protected endpoints on your chosen API Gateway.
-
-If you've used the Terraform tool to set up your Okta tenant, there are just a couple of adjustments that need to be made to your tenant "manually":
-
-* go into your Okta tenant and set passwords (or send activation emails) for the two new users that were created: carl.sagan and jodie.foster.
-* add the domain of your redirect_uri as a [trusted origin](https://developer.okta.com/docs/guides/enable-cors/overview/#granting-cross-origin-access-to-websites)
 
 ### Prerequisites for the sample application
 
@@ -131,7 +118,7 @@ Copy the `.env_example` file to a file called
 
 `.env`
 
-Open the `.env` file and update the settings for your environment. If you've followed all of the instructions so far and accepted all of the defaults (or if you've used the Terraform interface), then you'll only need to update the following values:
+Open the `.env` file and update the settings for your environment. If you've followed all of the instructions so far and accepted all of the defaults, then you'll only need to update the following values:
 
 OKTA_TENANT
 
@@ -167,7 +154,7 @@ The "raw" access token is available in the developer console if you want to insp
 
 > Note: if you authenticate as carl.sagan when you click on the authenticate button in the "gold access" box, you will successfully authenticate (get an Okta session) but you will not get an access token because the requested scopes do not line up with the policy you've set up in the authorization server.
 
-> Note: if you've followed the default Okta setup instructions, or used the Terraform setup tool, your default access policy will still be active in your tenant. The default access policy actually allows any user to be granted any scope (as long as the scope is requested in the authorization request). If you want to see if the authorization policies are "really" working, then just make the default policy for the authorization server inactive.
+> Note: if you've followed the default Okta setup instructions, your default access policy will still be active in your tenant. The default access policy actually allows any user to be granted any scope (as long as the scope is requested in the authorization request). If you want to see if the authorization policies are "really" working, then just make the default policy for the authorization server inactive.
 
 If you click on the "show me" links now, they won't work, because we haven't set up the `gateway_uri` in our app yet. That's the next step.
 

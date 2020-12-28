@@ -1,8 +1,6 @@
 # Setting up your Okta tenant for the Solar System sample application
 
-If you haven't considered it already, you might choose to use the [Terraform tool](https://okta-terraform.herokuapp.com) to set up your Okta tenant. The Terraform tool is a (non-supported) service that will take a couple of values from you (Okta API token, Okta tenant URL) and set up all of the objects for you automatically.
-
-If you don't want to do that, or you've had trouble with the Terraform tool, here's how to proceed. Again, these instructions are specific to the "solar system" use-case described above, but after completing the setup, hopefully you will see how it can be applied to your own use-case.
+These instructions are specific to the "solar system" use-case described above, but after completing the setup, hopefully you will see how it can be applied to your own use-case.
 
 ## Prerequisites
 
