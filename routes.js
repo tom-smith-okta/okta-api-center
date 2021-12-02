@@ -5,9 +5,8 @@ var fs = require("fs")
 
 const OktaJwtVerifier = require('@okta/jwt-verifier')
 
-var request = require("request")
-
-var session = require("express-session")
+var axios = require("axios").default
+var qs = require('qs')
 
 //*******************************************/
 
@@ -45,27 +44,26 @@ module.exports = function (app) {
 		// exchange the authorization code
 		// for an access token
 
-		var options = {
-			method: 'POST',
+		var data = qs.stringify({
+			'grant_type': 'authorization_code',
+			'redirect_uri': process.env.REDIRECT_URI,
+			'code': code 
+		});
+
+		var config = {
+			method: 'post',
 			url: process.env.ISSUER + "/v1/token",
-			qs: {
-				grant_type: 'authorization_code',
-				code: code,
-				redirect_uri: process.env.REDIRECT_URI
+			headers: { 
+			  'Accept': 'application/json', 
+			  'Authorization': 'Basic ' + getBasicAuthString(), 
+			  'Content-Type': 'application/x-www-form-urlencoded'
 			},
-			headers: {
-				'cache-control': 'no-cache',
-				authorization: 'Basic ' + getBasicAuthString(),
-				'content-type': 'application/x-www-form-urlencoded'
-			}
-		}
+			data : data
+		};
 
-		request(options, function (error, response, body) {
-			if (error) throw new Error(error);
+		axios(config).then(response => {
 
-			console.log(body);
-
-			var obj = JSON.parse(body);
+			var obj = response.data;
 
 			if (obj.hasOwnProperty("access_token")) {
 				req.session.access_token = obj.access_token;
@@ -106,6 +104,9 @@ module.exports = function (app) {
 				console.log("something went wrong with the id_token validation")
 				console.log(err)
 			})
+		}).catch(err=>{
+			console.log("something went wrong to get authorization")
+				console.log(err)
 		})
 	})
 
@@ -123,40 +124,40 @@ module.exports = function (app) {
 			var url = process.env.GATEWAY_URI + "/" + req.body.endpoint
 
 			console.log("sending request to: " + url)
-
-			var options = {
-				method: 'GET',
+	
+			var config = {
+				method: 'get',
 				url: url,
-				headers: {
-					'cache-control': 'no-cache',
-					authorization: "Bearer " + req.session.access_token,
-
-					accept: 'application/json',
-					'content-type': 'application/x-www-form-urlencoded'
+				headers: { 
+				  'Accept': 'application/json', 
+				  'Authorization': 'Basic ' + req.session.access_token, 
+				  'Content-Type': 'application/x-www-form-urlencoded'
 				}
-			}
+			};
 
-			request(options, function (error, response, body) {
-				if (error) throw new Error(error)
+			axios(config).then(response => {
 
 				console.log("******\nresponse from API gateway: ")
-				console.log("the status code is: " + response.statusCode)
+				console.log("the status code is: " + response.status)
 
 				console.log("the body is:")
 				console.log(body)
 
-				if (response.statusCode == 403) {
+				if (response.status == 403) {
 					res.json({message: 'forbidden'})
 					console.log("the request is forbidden")
 				}
-				else if (response.statusCode == 401) {
+				else if (response.status == 401) {
 					res.json({ message: 'unauthorized' })
 					console.log("the request is unauthorized")
 				}
 				// Add ec here for 504
 				else {
-					res.json(body)
+					res.json(response.data)
 				}
+			}).catch(err=>{
+				console.log("something went wrong to get authorization")
+					console.log(err)
 			})
 		}
 		else {
