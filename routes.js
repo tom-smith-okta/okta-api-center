@@ -63,7 +63,7 @@ module.exports = function (app) {
 
 		axios(config).then(response => {
 
-			var obj = JSON.parse(response.data);
+			var obj = response.data;
 
 			if (obj.hasOwnProperty("access_token")) {
 				req.session.access_token = obj.access_token;
@@ -124,12 +124,6 @@ module.exports = function (app) {
 			var url = process.env.GATEWAY_URI + "/" + req.body.endpoint
 
 			console.log("sending request to: " + url)
-
-			var data = qs.stringify({
-				'grant_type': 'authorization_code',
-				'redirect_uri': process.env.REDIRECT_URI,
-				'code': code 
-			});
 	
 			var config = {
 				method: 'get',
