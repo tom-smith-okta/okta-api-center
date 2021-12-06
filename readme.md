@@ -163,6 +163,7 @@ If you click on the "show me" links now, they won't work, because we haven't set
 Each API Gateway accommodates external OAuth providers slightly differently. Follow the instructions in the 'gateways' folder of this repo for the gateway that you are using. Instructions are available for the following gateways:
 
 * Apigee
+* [Apache APISIX](https://developer.okta.com/blog/2021/08/18/apache-apisix-gateway)
 * Amazon API gateway
 * Kong
 * Mulesoft
